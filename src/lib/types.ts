@@ -4,6 +4,11 @@ export type Viewport = {
   zoom: number
 }
 
+export type position = {
+  x: number
+  y: number
+}
+
 type EdgeData = {
   id: string
   from: string
@@ -15,8 +20,7 @@ type EdgeData = {
 export type NodeData = {
   id: string
   type: "rectangle" | "diamond" | "terminator" | "custom"
-  x: number
-  y: number
+  position: position;
   width: number
   height: number
   content: string
