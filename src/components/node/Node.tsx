@@ -33,6 +33,7 @@ export const Node = ({ node }: { node: NodeData }) => {
     };
 
     const mouseDown = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent canvas panning when dragging a node
         mouseStartPos.x = e.clientX;
         mouseStartPos.y = e.clientY;
         
@@ -50,9 +51,12 @@ export const Node = ({ node }: { node: NodeData }) => {
                 top: position.y,
                 width: node.width,
                 height: node.height,
-                border: `${node.style?.borderWidth || 2}px solid ${node.style?.borderColor || "#333"
+                border: `${node.style?.borderWidth 
+                    || 2}px solid ${node.style?.borderColor 
+                    || "#333"
                     }`,
-                backgroundColor: node.style?.backgroundColor || "#fff",
+                backgroundColor: node.style?.backgroundColor 
+                || "#fff",
             }}
         >
             <textarea
