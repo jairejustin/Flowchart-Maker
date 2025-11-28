@@ -1,13 +1,18 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import type { FlowDocument } from "../../lib/types";
 import { Node } from "../../components/node/Node";
-import { mockFlowDocument } from "../../assets/MockData";
 import Toolbar from "../../components/toolbar/Toolbar";
+import ZoomControls from "../../components/zoom-controls/ZoomControls";
 
 import "./CanvasPage.css";
 
-export default function CanvasPage() {
-  const nodes = Object.values(mockFlowDocument.nodes);
+interface CanvasPageProps {
+  flowDocument: FlowDocument;
+}
 
+export default function CanvasPage(CanvasPageProps: CanvasPageProps) {
+  const { flowDocument } = CanvasPageProps;
+  const nodes = Object.values(flowDocument.nodes);
   const [translateX, setTranslateX] = useState(0);
   const [translateY, setTranslateY] = useState(0);
   const [scale, setScale] = useState(1);
@@ -60,6 +65,20 @@ export default function CanvasPage() {
     }
   };
 
+  // Zoom handlers
+  function snap(value: number) {
+  return Math.round(value * 1000) / 1000; }
+
+  const onZoomIn = () => {
+    const next = snap(scale + 0.05);
+    if (next <= 5) setScale(next);
+  };
+
+  const onZoomOut = () => {
+    const next = snap(scale - 0.05);
+    if (next >= 0.1) setScale(next);
+  };
+
   return (
     <div
       className="canvas"
@@ -70,6 +89,10 @@ export default function CanvasPage() {
       onWheel={handleWheel}
     >
         <Toolbar />
+        <ZoomControls
+        zoomFactor={scale} 
+        onZoomIn={onZoomIn}
+        onZoomOut={onZoomOut}/>
         <div
           style={{
             transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,

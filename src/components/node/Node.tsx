@@ -76,7 +76,6 @@ export const Node = ({ node }: { node: NodeData }) => {
       {editing && (
         <textarea
           autoFocus
-          className="node-textarea"
           defaultValue={text}
           onBlur={e => {
             setText(e.target.value);
