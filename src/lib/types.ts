@@ -9,6 +9,8 @@ export type position = {
   y: number
 }
 
+export type shape = "rectangle" | "diamond"; // add more shapes as needed
+
 type EdgeData = {
   id: string
   from: string
@@ -17,24 +19,23 @@ type EdgeData = {
   path?: "straight" | "smooth"
 }
 
-export type NodeData = {
-  id: string
-  type: "rectangle" | "diamond" // add more shapes as needed
+export interface NodeData {
+  id: string;
   position: position;
-  width: number
-  height: number
-  content: string
-  style?: NodeStyle
-}
-
-export type NodeStyle = {
-  backgroundColor?: string
-  borderColor?: string
-  borderWidth?: number
-  borderRadius?: 0 | 10;
-  textColor?: string
-  fontSize?: number
-  fontWeight?: "normal" | "bold" | "bolder" | "lighter" | number
+  width: number;
+  height: number;
+  content: string;
+  shape: "rectangle" | "diamond" | string;
+  style?: {
+    backgroundColor?: string;
+    borderColor?: string;
+    borderWidth?: number;
+    borderRadius?: number;
+    textColor?: string;
+    fontSize?: number;
+    fontWeight?: string;
+  };
+  editing?: boolean;
 }
 
 export type FlowDocument = {

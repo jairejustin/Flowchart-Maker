@@ -15,7 +15,7 @@ export const mockFlowDocument: FlowDocument = {
   nodes: {
     "node_start": {
       id: "node_start",
-      type: "rectangle",
+      shape: "rectangle",
       position: { x: 200, y: 80 },
       width: 140,
       height: 50,
@@ -25,7 +25,7 @@ export const mockFlowDocument: FlowDocument = {
 
     "node_input": {
       id: "node_input",
-      type: "rectangle",
+      shape: "rectangle",
       position: { x: 200, y: 180 },
       width: 180,
       height: 60,
@@ -37,7 +37,7 @@ export const mockFlowDocument: FlowDocument = {
 
     "node_decision": {
       id: "node_decision",
-      type: "diamond",
+      shape: "diamond",
       position: { x: 200, y: 300 },
       width: 160,
       height: 100,
@@ -49,7 +49,7 @@ export const mockFlowDocument: FlowDocument = {
 
     "node_process": {
       id: "node_process",
-      type: "rectangle",
+      shape: "rectangle",
       position: { x: 200, y: 450 },
       width: 200,
       height: 60,
@@ -61,7 +61,7 @@ export const mockFlowDocument: FlowDocument = {
 
     "node_end": {
       id: "node_end",
-      type: "rectangle",
+      shape: "rectangle",
       position: { x: 200, y: 580 },
       width: 140,
       height: 50,
