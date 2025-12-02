@@ -11,7 +11,7 @@ export const Node = ({ node }: { node: NodeData }) => {
   const startPosRef = useRef({ x: 0, y: 0 });
 
   //read states from store
-  const storeNode = useFlowStore((state) => state.nodes[node.id]);
+  const storeNode = useFlowStore((state) => state.nodes.find((n) => n.id === node.id));
   const updateNodePosition = useFlowStore((state) => state.updateNodePosition);
   const updateNodeDimensions = useFlowStore((state) => state.updateNodeDimensions);
   const updateNodeContent = useFlowStore((state) => state.updateNodeContent);

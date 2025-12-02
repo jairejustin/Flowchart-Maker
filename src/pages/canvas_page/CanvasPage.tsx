@@ -16,7 +16,7 @@ export default function CanvasPage({ flowDocument }: CanvasPageProps) {
   
   //use flowDocument nodes for initial render
   //node component will subscribe to its own data from the store
-  const nodes = Object.values(flowDocument.nodes);
+  const nodes = flowDocument.nodes;
 
   //initialize store once on mount
   useEffect(() => {

@@ -2,71 +2,49 @@ import { create } from "zustand";
 import type { NodeData, position } from "../lib/types";
 
 interface FlowState {
-  nodes: Record<string, NodeData>;
+  nodes: NodeData[];
   isDraggingNode: boolean;
   updateNodePosition: (id: string, newPosition: position) => void;
   updateNodeDimensions: (id: string, width: number, height: number) => void;
   updateNodeContent: (id: string, content: string) => void;
   updateNodeEditing: (id: string, editing: boolean) => void;
   setIsDraggingNode: (isDragging: boolean) => void;
-  setNodes: (nodes: Record<string, NodeData>) => void;
+  setNodes: (nodes: NodeData[]) => void;
 }
 
 export const useFlowStore = create<FlowState>((set) => ({
-  nodes: {},
+  nodes: [],
   isDraggingNode: false,
   
   updateNodePosition: (id, newPosition) =>
     set((state) => ({
-      nodes: {
-        ...state.nodes,
-        [id]: {
-          ...state.nodes[id],
-          position: newPosition,
-        },
-      },
+      nodes: state.nodes.map((node) =>
+        node.id === id ? { ...node, position: newPosition } : node
+      ),
     })),
   
   setIsDraggingNode: (isDraggingNode) => set({ isDraggingNode }),
   
   updateNodeDimensions: (id, width, height) =>
     set((state) => ({
-      nodes: {
-        ...state.nodes,
-        [id]: {
-          ...state.nodes[id],
-          width,
-          height,
-        },
-      },
+      nodes: state.nodes.map((node) =>
+        node.id === id ? { ...node, width, height } : node
+      ),
     })),
-  
+
   updateNodeContent: (id, content) =>
     set((state) => ({
-      nodes: {
-        ...state.nodes,
-        [id]: {
-          ...state.nodes[id],
-          content,
-        },
-      },
+      nodes: state.nodes.map((node) =>
+        node.id === id ? { ...node, content } : node
+      ),
     })),
-  
+
   updateNodeEditing: (id, editing) =>
-    set((state) => {
-      const nodeToUpdate = state.nodes[id];
-      if (!nodeToUpdate) return state;
-      
-      return {
-        nodes: {
-          ...state.nodes,
-          [id]: {
-            ...nodeToUpdate,
-            editing,
-          },
-        },
-      };
-    }),
-  
-  setNodes: (nodes) => set({ nodes }),
+    set((state) => ({
+      nodes: state.nodes.map((node) =>
+        node.id === id ? { ...node, editing } : node
+      ),
+    })),
+
+  setNodes: (newNodes) => set({ nodes: newNodes }),
 }));
