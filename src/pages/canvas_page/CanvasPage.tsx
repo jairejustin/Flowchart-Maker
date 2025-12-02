@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import type { FlowDocument } from "../../lib/types";
 import { Node } from "../../components/node/Node";
+import { Edge } from "../../components/edge/Edge";
 import Toolbar from "../../components/toolbar/Toolbar";
 import ZoomControls from "../../components/zoom-controls/ZoomControls";
 import { useFlowStore } from "../../store/flowStore";
@@ -14,9 +15,9 @@ interface CanvasPageProps {
 export default function CanvasPage({ flowDocument }: CanvasPageProps) {
   const isDraggingNode = useFlowStore((state) => state.isDraggingNode);
   
-  //use flowDocument nodes for initial render
-  //node component will subscribe to its own data from the store
-  const nodes = flowDocument.nodes;
+  // Subscribe to nodes from store so edges update when nodes move
+  const nodes = useFlowStore((state) => state.nodes);
+  const edges = flowDocument.edges;
 
   //initialize store once on mount
   useEffect(() => {
@@ -56,31 +57,31 @@ export default function CanvasPage({ flowDocument }: CanvasPageProps) {
   };
 
   const handleTouchStart = (event: React.TouchEvent) => {
-  if (isDraggingNode) return;
-  
-  setIsPanning(true);
-  lastMousePos.current = { 
-    x: event.touches[0].clientX, 
-    y: event.touches[0].clientY 
+    if (isDraggingNode) return;
+    
+    setIsPanning(true);
+    lastMousePos.current = { 
+      x: event.touches[0].clientX, 
+      y: event.touches[0].clientY 
+    };
   };
-};
 
-const handleTouchMove = (event: React.TouchEvent) => {
-  if (!isPanning) return;
-  
-  const dx = event.touches[0].clientX - lastMousePos.current.x;
-  const dy = event.touches[0].clientY - lastMousePos.current.y;
-  setTranslateX((prev) => prev + dx);
-  setTranslateY((prev) => prev + dy);
-  lastMousePos.current = { 
-    x: event.touches[0].clientX, 
-    y: event.touches[0].clientY 
+  const handleTouchMove = (event: React.TouchEvent) => {
+    if (!isPanning) return;
+    
+    const dx = event.touches[0].clientX - lastMousePos.current.x;
+    const dy = event.touches[0].clientY - lastMousePos.current.y;
+    setTranslateX((prev) => prev + dx);
+    setTranslateY((prev) => prev + dy);
+    lastMousePos.current = { 
+      x: event.touches[0].clientX, 
+      y: event.touches[0].clientY 
+    };
   };
-};
 
-const handleTouchEnd = () => {
-  setIsPanning(false);
-};
+  const handleTouchEnd = () => {
+    setIsPanning(false);
+  };
 
   const handleWheel = (event: React.WheelEvent) => {
     event.preventDefault();
@@ -137,8 +138,38 @@ const handleTouchEnd = () => {
           transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
           transformOrigin: "0 0",
           overflow: "visible",
+          position: "relative",
+          width: "100%",
+          height: "100%",
         }}
       >
+        <svg
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+            overflow: "visible",
+          }}
+        >
+          <defs>
+            <marker
+              id="arrowhead"
+              markerWidth="10"
+              markerHeight="10"
+              refX="9"
+              refY="3"
+              orient="auto"
+            >
+              <polygon points="0 0, 10 3, 0 6" fill="black" />
+            </marker>
+          </defs>
+          {edges.map((edge) => (
+            <Edge key={edge.id} edge={edge} nodes={nodes} />
+          ))}
+        </svg>
         {nodes.map((node) => (
           <Node key={node.id} node={node} />
         ))}

@@ -36,8 +36,8 @@ export interface EdgeData {
   from: string
   to: string
   path: EdgePathType
-  fromAnchor?: EdgeAnchor
-  toAnchor?: EdgeAnchor
+  fromAnchor: EdgeAnchor
+  toAnchor: EdgeAnchor
   label?: EdgeLabel
   style?: EdgeStyle
 
