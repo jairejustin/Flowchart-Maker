@@ -3,6 +3,9 @@
 
 A web-based flowchart editor built with Vite, React, and TypeScript. Users can create, manipulate, style, and connect nodes on an interactive canvas.
 
+## Snapshot
+<img src="image.png" alt="snapshot" width="800" />
+
 ## Project Status
 
 The core canvas features are implemented: dragging, resizing, text editing, panning, zooming, and rendering nodes and edges from mock data. Styling tools for nodes are functional.
