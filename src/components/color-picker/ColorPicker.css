@@ -1,0 +1,15 @@
+.color-picker {
+    position: fixed;
+    padding: 12px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    top: 1rem;
+    right: 310px
+}
+
+.color-picker input {
+    margin: 0.5rem auto;
+    display: flex;
+}

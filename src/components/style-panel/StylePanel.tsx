@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFlowStore } from '../../store/flowStore';
-import './StylePanel.css'
-import { RgbColorPicker } from 'react-colorful';
+import './StylePanel.css';
+import ColorPicker from "../color-picker/ColorPicker"
 
 interface StylePanelProps {
   nodeId: string;
@@ -12,7 +12,8 @@ export default function StylePanel({ nodeId }: StylePanelProps) {
   const updateNodeContent = useFlowStore((state) => state.updateNodeContent);
   const updateNodeEditing = useFlowStore((state) => state.updateNodeEditing);
   const updateNodeStyles = useFlowStore((state) => state.updateNodeStyles);
-
+  const [openPicker, setOpenPicker] = useState<string | null>(null);
+  
   if (!node) {
     return null;
   }
@@ -32,6 +33,10 @@ export default function StylePanel({ nodeId }: StylePanelProps) {
 
   const handleStyleChange = (property: string, value: string | number) => {
     updateNodeStyles(node.id, { [property]: value });
+  };
+
+  const openColorPicker = (pickerType: string, event: React.MouseEvent<HTMLDivElement>) => {
+    setOpenPicker(pickerType);
   };
 
   return (
@@ -61,31 +66,28 @@ export default function StylePanel({ nodeId }: StylePanelProps) {
 
       <div className='style-row'>
         <label>Text color</label>
-        <input
-          type='color'
+        <div
           className='style-input-color'
-          value={textColor}
-          onChange={(e) => handleStyleChange('textColor', e.target.value)}
+          style={{ backgroundColor: textColor, cursor: 'pointer' }}
+          onClick={(e) => openColorPicker('text', e)}
         />
       </div>
 
       <div className='style-row'>
         <label>Background</label>
-        <input
-          type='color'
+        <div
           className='style-input-color'
-          value={backgroundColor}
-          onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
+          style={{ backgroundColor: backgroundColor, cursor: 'pointer' }}
+          onClick={(e) => openColorPicker('background', e)}
         />
       </div>
 
       <div className='style-row'>
         <label>Border color</label>
-        <input
-          type='color'
+        <div
           className='style-input-color'
-          value={borderColor}
-          onChange={(e) => handleStyleChange('borderColor', e.target.value)}
+          style={{ backgroundColor: borderColor, cursor: 'pointer' }}
+          onClick={(e) => openColorPicker('border', e)}
         />
       </div>
 
@@ -112,6 +114,27 @@ export default function StylePanel({ nodeId }: StylePanelProps) {
           max='50'
         />
       </div>
+
+      {openPicker === 'text' && (
+        <ColorPicker
+          color={textColor}
+          onChange={(color) => handleStyleChange('textColor', color)}
+        />
+      )}
+
+      {openPicker === 'background' && (
+        <ColorPicker
+          color={backgroundColor}
+          onChange={(color) => handleStyleChange('backgroundColor', color)}
+        />
+      )}
+
+      {openPicker === 'border' && (
+        <ColorPicker
+          color={borderColor}
+          onChange={(color) => handleStyleChange('borderColor', color)}
+        />
+      )}
     </div>
   );
 }
