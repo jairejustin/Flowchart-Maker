@@ -9,10 +9,9 @@ interface ResizeHandlesProps {
   width: number;
   height: number;
   scale: number;
-  borderPad: number;
 }
 
-export const ResizeHandles = ({ nodeId, position, width, height, scale, borderPad }: ResizeHandlesProps) => {
+export const ResizeHandles = ({ nodeId, position, width, height, scale }: ResizeHandlesProps) => {
   const mousePosRef = useRef({ x: 0, y: 0 });
   const startPosRef = useRef({ x: 0, y: 0 });
   const startSizeRef = useRef({ width: 0, height: 0 });
@@ -107,17 +106,16 @@ export const ResizeHandles = ({ nodeId, position, width, height, scale, borderPa
   };
 
   const handleSize = 8;
-  const pad = borderPad;
 
   const resizeHandles: { handle: ResizeHandle; cursor: string; x: number; y: number }[] = [
     { handle: "nw", cursor: "nwse-resize", x: -handleSize / 2, y: -handleSize / 2 },
-    { handle: "ne", cursor: "nesw-resize", x: width + pad - handleSize / 2, y: -handleSize / 2 },
-    { handle: "sw", cursor: "nesw-resize", x: -handleSize / 2, y: height + pad - handleSize / 2 },
-    { handle: "se", cursor: "nwse-resize", x: width + pad - handleSize / 2, y: height + pad - handleSize / 2 },
-    { handle: "n", cursor: "ns-resize", x: (width + pad) / 2 - handleSize / 2, y: -handleSize / 2 },
-    { handle: "s", cursor: "ns-resize", x: (width + pad) / 2 - handleSize / 2, y: height + pad - handleSize / 2 },
-    { handle: "e", cursor: "ew-resize", x: width + pad - handleSize / 2, y: (height + pad) / 2 - handleSize / 2 },
-    { handle: "w", cursor: "ew-resize", x: -handleSize / 2, y: (height + pad) / 2 - handleSize / 2 },
+    { handle: "ne", cursor: "nesw-resize", x: width - handleSize / 2, y: -handleSize / 2 },
+    { handle: "sw", cursor: "nesw-resize", x: -handleSize / 2, y: height - handleSize / 2 },
+    { handle: "se", cursor: "nwse-resize", x: width - handleSize / 2, y: height - handleSize / 2 },
+    { handle: "n", cursor: "ns-resize", x: (width) / 2 - handleSize / 2, y: -handleSize / 2 },
+    { handle: "s", cursor: "ns-resize", x: (width) / 2 - handleSize / 2, y: height - handleSize / 2 },
+    { handle: "e", cursor: "ew-resize", x: width - handleSize / 2, y: (height) / 2 - handleSize / 2 },
+    { handle: "w", cursor: "ew-resize", x: -handleSize / 2, y: (height) / 2 - handleSize / 2 },
   ];
 
   return (
@@ -125,9 +123,10 @@ export const ResizeHandles = ({ nodeId, position, width, height, scale, borderPa
       style={{
         position: "absolute",
         transform: `translate(${position.x}px, ${position.y}px)`,
-        width: width + pad,
-        height: height + pad,
+        width: width,
+        height: height,
         pointerEvents: "none",
+        border: `1px solid #4A90E2`,
       }}
     >
       {resizeHandles.map(({ handle, cursor, x, y }) => (

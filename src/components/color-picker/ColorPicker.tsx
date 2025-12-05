@@ -3,6 +3,7 @@ import "./ColorPicker.css"
 
 interface ColorPickerProps {
   color: string;
+  target: string;
   onChange: (color: string) => void;
 }
 
@@ -22,7 +23,7 @@ const rgbToHex = (r: number, g: number, b: number): string => {
   }).join('');
 };
 
-export default function ColorPicker({ color, onChange }: ColorPickerProps) {
+export default function ColorPicker({ color, target, onChange }: ColorPickerProps) {
   const handleColorChange = (rgb: { r: number; g: number; b: number }) => {
     const hexColor = rgbToHex(rgb.r, rgb.g, rgb.b);
     onChange(hexColor);
@@ -38,6 +39,7 @@ export default function ColorPicker({ color, onChange }: ColorPickerProps) {
 
   return (
     <div className='color-picker'>
+      <label>{target}</label>
       <RgbColorPicker
         color={hexToRgb(color)}
         onChange={handleColorChange}

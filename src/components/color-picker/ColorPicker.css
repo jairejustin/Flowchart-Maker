@@ -1,6 +1,6 @@
 .color-picker {
     position: fixed;
-    padding: 12px;
+    padding: 0 1rem 0rem 1rem;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -10,6 +10,11 @@
 }
 
 .color-picker input {
-    margin: 0.5rem auto;
+    margin: 1rem auto;
     display: flex;
+}
+
+.color-picker label {
+    font-weight: 600;
+    letter-spacing: -0.5px;
 }

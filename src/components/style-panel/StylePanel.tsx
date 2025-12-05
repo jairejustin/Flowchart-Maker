@@ -19,6 +19,7 @@ export default function StylePanel({ nodeId }: StylePanelProps) {
   }
 
   const text = node.content;
+  const shape = node.shape;
   const fontSize = node.style?.fontSize || 14;
   const textColor = node.style?.textColor || '#000000';
   const backgroundColor = node.style?.backgroundColor || '#ffffff';
@@ -102,22 +103,24 @@ export default function StylePanel({ nodeId }: StylePanelProps) {
           max='10'
         />
       </div>
-
-      <div className='style-row'>
-        <label>Border radius</label>
-        <input
-          type='number'
-          className='style-input'
-          value={borderRadius}
-          onChange={(e) => handleStyleChange('borderRadius', Number(e.target.value))}
-          min='0'
-          max='50'
-        />
-      </div>
+      {shape === 'rectangle' && (
+        <div className='style-row'>
+          <label>Border radius</label>
+          <input
+            type='number'
+            className='style-input'
+            value={borderRadius}
+            onChange={(e) => handleStyleChange('borderRadius', Number(e.target.value))}
+            min='0'
+            max='50'
+          />
+        </div>
+      )}
 
       {openPicker === 'text' && (
         <ColorPicker
           color={textColor}
+          target="Text Color"
           onChange={(color) => handleStyleChange('textColor', color)}
         />
       )}
@@ -125,6 +128,7 @@ export default function StylePanel({ nodeId }: StylePanelProps) {
       {openPicker === 'background' && (
         <ColorPicker
           color={backgroundColor}
+          target="Background Color"
           onChange={(color) => handleStyleChange('backgroundColor', color)}
         />
       )}
@@ -132,6 +136,7 @@ export default function StylePanel({ nodeId }: StylePanelProps) {
       {openPicker === 'border' && (
         <ColorPicker
           color={borderColor}
+          target="Border Color"
           onChange={(color) => handleStyleChange('borderColor', color)}
         />
       )}

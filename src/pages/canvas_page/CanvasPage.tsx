@@ -23,11 +23,12 @@ export default function CanvasPage({ flowDocument }: CanvasPageProps) {
   
   // Subscribe to nodes from store so edges update when nodes move
   const nodes = useFlowStore((state) => state.nodes);
-  const edges = flowDocument.edges;
+  const edges = useFlowStore((state) => state.edges);
 
   //initialize store once on mount
   useEffect(() => {
     useFlowStore.getState().setNodes(flowDocument.nodes);
+    useFlowStore.getState().setEdges(flowDocument.edges);
   }, []);
 
   const [translateX, setTranslateX] = useState(0);
@@ -41,7 +42,7 @@ export default function CanvasPage({ flowDocument }: CanvasPageProps) {
   const target = event.target as HTMLElement;
   if (
     isDraggingNode ||
-    isResizingNode || // Prevent panning when resizing
+    isResizingNode ||
     target.closest('.style-panel') ||
     target.closest('.toolbar') ||
     target.closest('.zoom-controls') ||
@@ -201,11 +202,11 @@ export default function CanvasPage({ flowDocument }: CanvasPageProps) {
                 width={node.width}
                 height={node.height}
                 scale={scale}
-                borderPad={(node.style?.borderWidth || 2) * 2}
               />
             )}
           </React.Fragment>
         ))}
+        
       </div>
     </div>
   );
