@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import { useFlowStore } from "../../store/flowStore";
 
 type ResizeHandle = "nw" | "ne" | "sw" | "se" | "n" | "s" | "e" | "w";
@@ -21,89 +21,104 @@ export const ResizeHandles = ({ nodeId, position, width, height, scale }: Resize
   const updateNodeSize = useFlowStore((state) => state.updateNodeDimensions);
   const setIsResizingNode = useFlowStore((state) => state.setIsResizingNode);
 
-  const onResize = (clientX: number, clientY: number) => {
-    if (!resizeHandleRef.current) return;
+  const onResize = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!resizeHandleRef.current) return;
 
-    const dx = (clientX - mousePosRef.current.x) / scale;
-    const dy = (clientY - mousePosRef.current.y) / scale;
-    const handle = resizeHandleRef.current;
+      const dx = (clientX - mousePosRef.current.x) / scale;
+      const dy = (clientY - mousePosRef.current.y) / scale;
+      const handle = resizeHandleRef.current;
 
-    let newWidth = startSizeRef.current.width;
-    let newHeight = startSizeRef.current.height;
-    let newX = startPosRef.current.x;
-    let newY = startPosRef.current.y;
+      let newWidth = startSizeRef.current.width;
+      let newHeight = startSizeRef.current.height;
+      let newX = startPosRef.current.x;
+      let newY = startPosRef.current.y;
 
-    const minSize = 50;
+      const minSize = 50;
 
-    if (handle.includes("e")) {
-      newWidth = Math.max(minSize, startSizeRef.current.width + dx);
-    }
-    if (handle.includes("w")) {
-      const proposedWidth = startSizeRef.current.width - dx;
-      if (proposedWidth >= minSize) {
-        newWidth = proposedWidth;
-        newX = startPosRef.current.x + dx;
+      if (handle.includes("e")) {
+        newWidth = Math.max(minSize, startSizeRef.current.width + dx);
       }
-    }
-    if (handle.includes("s")) {
-      newHeight = Math.max(minSize, startSizeRef.current.height + dy);
-    }
-    if (handle.includes("n")) {
-      const proposedHeight = startSizeRef.current.height - dy;
-      if (proposedHeight >= minSize) {
-        newHeight = proposedHeight;
-        newY = startPosRef.current.y + dy;
+      if (handle.includes("w")) {
+        const proposedWidth = startSizeRef.current.width - dx;
+        if (proposedWidth >= minSize) {
+          newWidth = proposedWidth;
+          newX = startPosRef.current.x + dx;
+        }
       }
-    }
+      if (handle.includes("s")) {
+        newHeight = Math.max(minSize, startSizeRef.current.height + dy);
+      }
+      if (handle.includes("n")) {
+        const proposedHeight = startSizeRef.current.height - dy;
+        if (proposedHeight >= minSize) {
+          newHeight = proposedHeight;
+          newY = startPosRef.current.y + dy;
+        }
+      }
 
-    updateNodeSize(nodeId, newWidth, newHeight);
-    updateNodePosition(nodeId, { x: newX, y: newY });
-  };
+      updateNodeSize(nodeId, newWidth, newHeight);
+      updateNodePosition(nodeId, { x: newX, y: newY });
+    },
+    [nodeId, scale, updateNodePosition, updateNodeSize]
+  );
 
-  const onMouseMove = (e: MouseEvent) => {
-    onResize(e.clientX, e.clientY);
-  };
+  const onMouseMove = useCallback(
+    (e: MouseEvent) => {
+      onResize(e.clientX, e.clientY);
+    },
+    [onResize]
+  );
 
-  const onTouchMove = (e: TouchEvent) => {
-    e.preventDefault();
-    onResize(e.touches[0].clientX, e.touches[0].clientY);
-  };
+  const onTouchMove = useCallback(
+    (e: TouchEvent) => {
+      e.preventDefault();
+      onResize(e.touches[0].clientX, e.touches[0].clientY);
+    },
+    [onResize]
+  );
 
-  const onEnd = () => {
+  const onEnd = useCallback(() => {
     document.removeEventListener("mousemove", onMouseMove);
     document.removeEventListener("mouseup", onEnd);
     document.removeEventListener("touchmove", onTouchMove);
     document.removeEventListener("touchend", onEnd);
-    
+
     setIsResizingNode(false);
     resizeHandleRef.current = null;
-  };
+  }, [onMouseMove, onTouchMove, setIsResizingNode]);
 
-  const onResizeHandleMouseDown = (e: React.MouseEvent, handle: ResizeHandle) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const onResizeHandleMouseDown = useCallback(
+    (e: React.MouseEvent, handle: ResizeHandle) => {
+      e.stopPropagation();
+      e.preventDefault();
 
-    mousePosRef.current = { x: e.clientX, y: e.clientY };
-    startPosRef.current = { x: position.x, y: position.y };
-    startSizeRef.current = { width, height };
-    resizeHandleRef.current = handle;
-    setIsResizingNode(true);
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onEnd);
-  };
+      mousePosRef.current = { x: e.clientX, y: e.clientY };
+      startPosRef.current = { x: position.x, y: position.y };
+      startSizeRef.current = { width, height };
+      resizeHandleRef.current = handle;
+      setIsResizingNode(true);
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onEnd);
+    },
+    [height, onEnd, onMouseMove, position.x, position.y, setIsResizingNode, width]
+  );
 
-  const onResizeHandleTouchStart = (e: React.TouchEvent, handle: ResizeHandle) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const onResizeHandleTouchStart = useCallback(
+    (e: React.TouchEvent, handle: ResizeHandle) => {
+      e.stopPropagation();
+      e.preventDefault();
 
-    mousePosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    startPosRef.current = { x: position.x, y: position.y };
-    startSizeRef.current = { width, height };
-    resizeHandleRef.current = handle;
-    setIsResizingNode(true);
-    document.addEventListener("touchmove", onTouchMove, { passive: false });
-    document.addEventListener("touchend", onEnd);
-  };
+      mousePosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      startPosRef.current = { x: position.x, y: position.y };
+      startSizeRef.current = { width, height };
+      resizeHandleRef.current = handle;
+      setIsResizingNode(true);
+      document.addEventListener("touchmove", onTouchMove, { passive: false });
+      document.addEventListener("touchend", onEnd);
+    },
+    [height, onEnd, onTouchMove, position.x, position.y, setIsResizingNode, width]
+  );
 
   const handleSize = 8;
 

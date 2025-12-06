@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import type { NodeData } from "../../lib/types";
 import { wrapText } from "../../lib/utils";
 import { useFlowStore } from "../../store/flowStore";
@@ -32,56 +32,71 @@ export const Node = ({ node, selectNode }: NodeProps) => {
   const editing = storeNode.editing || false;
   const text = storeNode.content;
 
-  const onMove = (clientX: number, clientY: number) => {
-    const dx = clientX - mousePosRef.current.x;
-    const dy = clientY - mousePosRef.current.y;
-    
-    updateNodePosition(node.id, { 
-      x: startPosRef.current.x + dx, 
-      y: startPosRef.current.y + dy 
-    });
-  };
+  const onMove = useCallback(
+    (clientX: number, clientY: number) => {
+      const dx = clientX - mousePosRef.current.x;
+      const dy = clientY - mousePosRef.current.y;
 
-  const onMouseMove = (e: MouseEvent) => {
-    onMove(e.clientX, e.clientY);
-  };
+      updateNodePosition(node.id, {
+        x: startPosRef.current.x + dx,
+        y: startPosRef.current.y + dy,
+      });
+    },
+    [node.id, updateNodePosition]
+  );
 
-  const onTouchMove = (e: TouchEvent) => {
-    e.preventDefault();
-    onMove(e.touches[0].clientX, e.touches[0].clientY);
-  };
+  const onMouseMove = useCallback(
+    (e: MouseEvent) => {
+      onMove(e.clientX, e.clientY);
+    },
+    [onMove]
+  );
 
-  const onEnd = () => {
+  const onTouchMove = useCallback(
+    (e: TouchEvent) => {
+      e.preventDefault();
+      onMove(e.touches[0].clientX, e.touches[0].clientY);
+    },
+    [onMove]
+  );
+
+  const onEnd = useCallback(() => {
     document.removeEventListener("mousemove", onMouseMove);
     document.removeEventListener("mouseup", onEnd);
     document.removeEventListener("touchmove", onTouchMove);
     document.removeEventListener("touchend", onEnd);
     selectNode(node.id);
-    
+
     setIsDraggingNode(false);
-  };
+  }, [node.id, onMouseMove, onTouchMove, selectNode, setIsDraggingNode]);
 
-  const onMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (editing) return;
-    
-    mousePosRef.current = { x: e.clientX, y: e.clientY };
-    startPosRef.current = { x: position.x, y: position.y };
-    setIsDraggingNode(true);
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onEnd);
-  };
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (editing) return;
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    if (editing) return;
-    
-    mousePosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    startPosRef.current = { x: position.x, y: position.y };
-    setIsDraggingNode(true);
-    document.addEventListener("touchmove", onTouchMove, { passive: false });
-    document.addEventListener("touchend", onEnd);
-  };
+      mousePosRef.current = { x: e.clientX, y: e.clientY };
+      startPosRef.current = { x: position.x, y: position.y };
+      setIsDraggingNode(true);
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onEnd);
+    },
+    [editing, onEnd, onMouseMove, position.x, position.y, setIsDraggingNode]
+  );
+
+  const onTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      e.stopPropagation();
+      if (editing) return;
+
+      mousePosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      startPosRef.current = { x: position.x, y: position.y };
+      setIsDraggingNode(true);
+      document.addEventListener("touchmove", onTouchMove, { passive: false });
+      document.addEventListener("touchend", onEnd);
+    },
+    [editing, onEnd, onTouchMove, position.x, position.y, setIsDraggingNode]
+  );
 
   const border = node.style?.borderWidth || 2;
   const pad = border * 2;
