@@ -3,18 +3,18 @@ import type { NodeData, EdgeData, NodeStyle, EdgeStyle, Viewport } from "./types
 export const DEFAULT_NODE_CONFIG = {
   width: 200,
   height: 100,
-  content: "New Node",
+  content: "Text",
   shape: "rectangle" as const,
   editing: false,
 };
 
 export const DEFAULT_NODE_STYLE: Required<NodeStyle> = {
   backgroundColor: "#ffffff",
-  borderColor: "#3b82f6",
+  borderColor: "#000",
   borderWidth: 2,
-  borderRadius: 8,
-  textColor: "#1f2937",
-  fontSize: 16,
+  borderRadius: 0,
+  textColor: "#000",
+  fontSize: 14,
   fontWeight: "normal",
 };
 
@@ -25,7 +25,7 @@ export const DEFAULT_EDGE_CONFIG = {
 };
 
 export const DEFAULT_EDGE_STYLE: Required<EdgeStyle> = {
-  color: "#6b7280",
+  color: "#000",
   width: 2,
   dashed: false,
 };

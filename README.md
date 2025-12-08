@@ -9,7 +9,7 @@ A web-based flowchart editor built with Vite, React, and TypeScript. Users can c
 ## Project Status
 
 The core canvas features are implemented: dragging, resizing, text editing, panning, zooming, and rendering nodes and edges from mock data. Styling tools for nodes are functional.
-**Creation and deletion of nodes and edges are not yet implemented**. Additional toolbar actions are present as placeholders for upcoming features. Rectangle and diamond node shapes are currently supported. 
+Creation, deletion, and duplication of nodes are implemented but edge actions are not. Additional toolbar actions are present as placeholders for upcoming features. Rectangle and diamond node shapes are currently supported. 
 
 ## Features
 
@@ -17,14 +17,14 @@ The core canvas features are implemented: dragging, resizing, text editing, pann
 
 * **Node Creation and Manipulation**
   * Drag and resize nodes
-  * Edit node content by double-clicking
-  * Select nodes to apply styling
+  * Select nodes to apply styling and edit content
+  * Create nodes with shape options
 * **Canvas Interaction**
   * Pan by dragging the background
-  * Zoom using the scroll wheel or on-screen controls
+  * Zoom using the scroll wheel or on-screen controls 
 * **Edges**
   * Connect nodes with directed edges
-  * Edges automatically update when nodes move
+  * Connected edges automatically update when nodes move
   * Optional labels for edges
 
 ### Styling
@@ -46,8 +46,8 @@ The core canvas features are implemented: dragging, resizing, text editing, pann
 
 ## To do
 
+* Edge actions and styling options
 * Additional shapes (circles, ellipses, parallelograms)
-* Creating and deleting nodes and edges via the toolbar
 * Undo/redo system
 * Node grouping
 * Orthogonal edge routing (Manhattan routing)

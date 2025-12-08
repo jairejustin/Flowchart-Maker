@@ -137,5 +137,25 @@
 }
 
 .border-type-btn svg {
-  display: block;
+display: block;
+}
+
+.action-buttons {
+  padding-top: 2.5rem;
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+}
+
+.action-button {
+    outline: none;
+    display: block;
+    cursor: pointer;
+    text-align: center;
+    border: none;
+    border-radius: 10px;
+    background-color: #f0f0f0;
+}
+.action-button:hover {
+background-color: #d0d0d0;
 }

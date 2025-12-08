@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Square, SquareRoundCorner } from 'lucide-react';
+import { Square, SquareRoundCorner, Trash2, Copy } from 'lucide-react';
 import { useFlowStore } from '../../store/flowStore';
 import './StylePanel.css';
 import ColorPicker from "../color-picker/ColorPicker"
@@ -13,6 +13,8 @@ export default function StylePanel({ nodeId }: StylePanelProps) {
   const updateNodeContent = useFlowStore((state) => state.updateNodeContent);
   const updateNodeEditing = useFlowStore((state) => state.updateNodeEditing);
   const updateNodeStyles = useFlowStore((state) => state.updateNodeStyles);
+  const selectNode = useFlowStore((state) => state.selectNode);
+  const {addNode, deleteNode} = useFlowStore(); 
   const [openPicker, setOpenPicker] = useState<string | null>(null);
   
   if (!node) {
@@ -40,6 +42,28 @@ export default function StylePanel({ nodeId }: StylePanelProps) {
   const openColorPicker = (pickerType: string) => {
     setOpenPicker(openPicker === pickerType ? null : pickerType);
   };
+
+  const handleDeleteNode = () => {
+    deleteNode(nodeId);
+    return null;
+  }
+
+  const handleDuplicateNode = () => {
+    const duplicateNodeData = {
+      content: node.content,
+      width: node.width,
+      height: node.height,
+      shape: node.shape,
+      style: node.style,
+      position: {
+        x: node.position.x + 20, 
+        y: node.position.y + 20, 
+      },//add offset
+    };
+    
+    const newId = addNode(duplicateNodeData);
+    selectNode(newId);
+  }
 
   return (
     <div className='style-panel'>
@@ -147,6 +171,18 @@ export default function StylePanel({ nodeId }: StylePanelProps) {
           onChange={(color) => handleStyleChange('borderColor', color)}
         />
       )}
+      <div className='action-buttons'>
+        <button 
+          className='action-button'
+          onClick={handleDeleteNode}>
+          <Trash2/>
+        </button>
+        <button 
+          className='action-button'
+          onClick={handleDuplicateNode}>
+          <Copy />
+        </button>
+      </div>
     </div>
   );
 }

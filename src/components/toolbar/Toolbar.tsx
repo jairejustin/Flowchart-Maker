@@ -1,9 +1,22 @@
 import { useState } from "react";
 import { Type, LetterTextIcon, ShapesIcon, Diamond, Square } from "lucide-react";
 import "./Toolbar.css";
+import { useFlowStore } from "../../store/flowStore";
 
 export default function Toolbar() {
   const [openCreateNode, setOpenCreateNode] = useState(false);
+  const { addNode } = useFlowStore();
+
+  const handleAddRectangle = () => {
+    addNode({ shape: "rectangle" });
+    setOpenCreateNode(false);
+  };
+
+  const handleAddDiamond = () => {
+    addNode({ shape: "diamond" });
+    setOpenCreateNode(false);
+  };
+
   return (
     <div className="toolbar">
         <aside>
@@ -26,10 +39,10 @@ export default function Toolbar() {
           </div>
           { openCreateNode &&
           <div className="toolbar__shapes-option"> 
-            <button className="toolbar__button">
+            <button className="toolbar__button" onClick={handleAddRectangle}>
               <Square/>
             </button>
-            <button className="toolbar__button">
+            <button className="toolbar__button" onClick={handleAddDiamond}>
               <Diamond/>
             </button>
           </div>
