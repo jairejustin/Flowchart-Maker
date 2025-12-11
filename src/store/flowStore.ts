@@ -5,6 +5,7 @@ import type {
   NodeData, 
   position, 
   NodeStyle, 
+  EdgeStyle,
   EdgeData, 
   EdgeAnchor,
   Viewport,
@@ -18,6 +19,7 @@ interface FlowState {
   edges: EdgeData[];
   viewport: Viewport;
   selectedNodeId: string | null;
+  selectedEdgeId: string | null;
   
   // UI state (not persisted)
   isDraggingNode: boolean;
@@ -36,9 +38,11 @@ interface FlowState {
   updateNodeContent: (id: string, content: string) => void;
   updateNodeEditing: (id: string, editing: boolean) => void;
   updateNodeStyles: (id: string, style: Partial<NodeStyle>) => void;
+  updateEdgeStyles: (id: string, style: Partial<EdgeStyle>) => void;
   setNodes: (nodes: NodeData[]) => void;
   
   // Edge operations
+  selectEdge: (id: string | null) => void;
   addEdge: (edgeData?: Partial<EdgeData>) => string;
   deleteEdge: (id: string) => void;
   updateEdgeHead: (id: string, to: string | position, toAnchor?: EdgeAnchor) => void;
@@ -61,6 +65,7 @@ export const useFlowStore = create<FlowState>()(
       edges: [],
       viewport: { x: 0, y: 0, zoom: 1 },
       selectedNodeId: null,
+      selectedEdgeId: null,
       isDraggingNode: false,
       isResizingNode: false,
       isDraggingEdge: false,
@@ -166,6 +171,11 @@ export const useFlowStore = create<FlowState>()(
         }));
       },
 
+            // In your store definition
+      selectEdge: (id) => {
+        set({ selectedEdgeId: id });
+      },
+
       updateEdgeHead: (id, to, toAnchor) => {
         set((state) => ({
           edges: state.edges.map((edge) =>
@@ -176,6 +186,16 @@ export const useFlowStore = create<FlowState>()(
 
       setEdges: (newEdges) => {
         set({ edges: newEdges });
+      },
+
+      updateEdgeStyles: (id, style) => {
+        set((state) => ({
+          edges: state.edges.map((edge) =>
+            edge.id === id
+              ? { ...edge, style: { ...edge.style, ...style } }
+              : edge
+          ),
+        }));
       },
 
       // Viewport operations

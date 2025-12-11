@@ -11,6 +11,7 @@ import "./CanvasPage.css";
 
 export default function CanvasPage() {
   const selectedNodeId = useFlowStore((state) => state.selectedNodeId);
+  const selectedEdgeId = useFlowStore((state) => state.selectedEdgeId);
   const viewport = useFlowStore((state) => state.viewport);
 
   // Subscribe to nodes and edges from store
@@ -60,7 +61,10 @@ export default function CanvasPage() {
     >
       <Toolbar />
       {selectedNodeId && (
-        <StylePanel nodeId={selectedNodeId} />
+        <StylePanel id={selectedNodeId} type="Node"/>
+      )}
+      {selectedEdgeId && (
+        <StylePanel id={selectedEdgeId} type="Edge" />
       )}
       <ZoomControls
         zoomFactor={scale}

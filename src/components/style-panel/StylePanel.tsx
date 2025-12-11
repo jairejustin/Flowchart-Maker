@@ -5,184 +5,266 @@ import './StylePanel.css';
 import ColorPicker from "../color-picker/ColorPicker"
 
 interface StylePanelProps {
-  nodeId: string;
+  id: string;
+  type: "Node" | "Edge"
 }
 
-export default function StylePanel({ nodeId }: StylePanelProps) {
-  const node = useFlowStore((state) => state.nodes.find(n => n.id === nodeId));
+export default function StylePanel({ id, type }: StylePanelProps) {
+  const [openPicker, setOpenPicker] = useState<string | null>(null);
+  
+  const node = useFlowStore((state) => 
+    type === "Node" ? state.nodes.find(n => n.id === id) : null
+  );
+  
+  const edge = useFlowStore((state) => 
+    type === "Edge" ? state.edges.find(e => e.id === id) : null
+  );
+  
   const updateNodeContent = useFlowStore((state) => state.updateNodeContent);
   const updateNodeEditing = useFlowStore((state) => state.updateNodeEditing);
   const updateNodeStyles = useFlowStore((state) => state.updateNodeStyles);
+  const updateEdgeStyles = useFlowStore((state) => state.updateEdgeStyles);
   const selectNode = useFlowStore((state) => state.selectNode);
-  const {addNode, deleteNode} = useFlowStore(); 
-  const [openPicker, setOpenPicker] = useState<string | null>(null);
+  const selectEdge = useFlowStore((state) => state.selectEdge);
+  const { addNode, deleteNode, deleteEdge } = useFlowStore(); 
   
-  if (!node) {
-    return null;
-  }
-
-  const text = node.content;
-  const shape = node.shape;
-  const fontSize = node.style?.fontSize || 14;
-  const textColor = node.style?.textColor || '#000000';
-  const backgroundColor = node.style?.backgroundColor || '#ffffff';
-  const borderColor = node.style?.borderColor || '#000000';
-  const borderWidth = node.style?.borderWidth || 2;
-  const borderRadius = node.style?.borderRadius || 0;
-
-  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newText = e.target.value;
-    updateNodeContent(node.id, newText);
-  };
-
-  const handleStyleChange = (property: string, value: string | number) => {
-    updateNodeStyles(node.id, { [property]: value });
-  };
-
   const openColorPicker = (pickerType: string) => {
     setOpenPicker(openPicker === pickerType ? null : pickerType);
   };
 
-  const handleDeleteNode = () => {
-    deleteNode(nodeId);
-    return null;
-  }
+  //style panel for nodes
+  if (type === "Node") {
+    if (!node) {
+      return null;
+    }
 
-  const handleDuplicateNode = () => {
-    const duplicateNodeData = {
-      content: node.content,
-      width: node.width,
-      height: node.height,
-      shape: node.shape,
-      style: node.style,
-      position: {
-        x: node.position.x + 20, 
-        y: node.position.y + 20, 
-      },//add offset
+    const text = node.content;
+    const shape = node.shape;
+    const fontSize = node.style?.fontSize || 14;
+    const textColor = node.style?.textColor || '#000000';
+    const backgroundColor = node.style?.backgroundColor || '#ffffff';
+    const borderColor = node.style?.borderColor || '#000000';
+    const borderWidth = node.style?.borderWidth || 2;
+    const borderRadius = node.style?.borderRadius || 0;
+
+    const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newText = e.target.value;
+      updateNodeContent(node.id, newText);
     };
-    
-    const newId = addNode(duplicateNodeData);
-    selectNode(newId);
+
+    const handleStyleChange = (property: string, value: string | number) => {
+      updateNodeStyles(node.id, { [property]: value });
+    };
+
+    const handleDeleteNode = () => {
+      deleteNode(node.id);
+      selectNode(null);
+    }
+
+    const handleDuplicateNode = () => {
+      const duplicateNodeData = {
+        content: node.content,
+        width: node.width,
+        height: node.height,
+        shape: node.shape,
+        style: node.style,
+        position: {
+          x: node.position.x + 20, 
+          y: node.position.y + 20, 
+        },
+      };
+      
+      const newId = addNode(duplicateNodeData);
+      selectNode(newId);
+    }
+
+    return (
+      <div className='style-panel'>
+        <textarea
+          className='style-panel__node-textbox'
+          placeholder='Write text'
+          autoFocus
+          value={text}
+          onBlur={() => {
+            updateNodeEditing(node.id, false);
+          }}
+          onChange={handleTextChange}
+        />
+
+        {/* Text Row */}
+        <div className='style-row-compact'>
+          <label>Text</label>
+          <div className='style-row-compact__controls'>
+            <div
+              className='style-input-color'
+              style={{ backgroundColor: textColor }}
+              onClick={() => openColorPicker('text')}
+            />
+            <input
+              type='number'
+              className='style-input-small'
+              value={fontSize}
+              onChange={(e) => handleStyleChange('fontSize', Number(e.target.value))}
+              min='8'
+              max='72'
+            />
+          </div>
+        </div>
+
+        {/* Background Row */}
+        <div className='style-row-compact'>
+          <label>Background</label>
+          <div className='style-row-compact__controls'>
+            <div
+              className='style-input-color'
+              style={{ backgroundColor: backgroundColor }}
+              onClick={() => openColorPicker('background')}
+            />
+          </div>
+        </div>
+
+        {/* Border Row */}
+        <div className='style-row-compact'>
+          <label>Border</label>
+          <div className='style-row-compact__controls'>
+            <div
+              className='style-input-color'
+              style={{ backgroundColor: borderColor }}
+              onClick={() => openColorPicker('border')}
+            />
+            <input
+              type='number'
+              className='style-input-small'
+              value={borderWidth}
+              onChange={(e) => handleStyleChange('borderWidth', Number(e.target.value))}
+              min='0'
+              max='10'
+            />
+            {shape === 'rectangle' && (
+              <div className='border-type-buttons'>
+                <button
+                  className={`border-type-btn ${borderRadius === 0 ? 'active' : ''}`}
+                  onClick={() => handleStyleChange('borderRadius', 0)}
+                  title='Square corners'
+                >
+                  <Square size={16} strokeWidth={2} />
+                </button>
+                <button
+                  className={`border-type-btn ${borderRadius > 0 ? 'active' : ''}`}
+                  onClick={() => handleStyleChange('borderRadius', 10)}
+                  title='Rounded corners'
+                >
+                  <SquareRoundCorner size={16} strokeWidth={2} />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {openPicker === 'text' && (
+          <ColorPicker
+            color={textColor}
+            target="Text Color"
+            onChange={(color) => handleStyleChange('textColor', color)}
+          />
+        )}
+
+        {openPicker === 'background' && (
+          <ColorPicker
+            color={backgroundColor}
+            target="Background Color"
+            onChange={(color) => handleStyleChange('backgroundColor', color)}
+          />
+        )}
+
+        {openPicker === 'border' && (
+          <ColorPicker
+            color={borderColor}
+            target="Border Color"
+            onChange={(color) => handleStyleChange('borderColor', color)}
+          />
+        )}
+        
+        <div className='action-buttons'>
+          <button 
+            className='action-button'
+            onClick={handleDeleteNode}>
+            <Trash2/>
+          </button>
+          <button 
+            className='action-button'
+            onClick={handleDuplicateNode}>
+            <Copy />
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  return (
-    <div className='style-panel'>
-      <textarea
-        className='style-panel__node-textbox'
-        placeholder='Write text'
-        autoFocus
-        value={text}
-        onBlur={() => {
-          updateNodeEditing(node.id, false);
-        }}
-        onChange={handleTextChange}
-      />
+  //style panel for edges
+  if (type === "Edge") {
+    if (!edge) {
+      return null;
+    }
 
-      {/* Text Row */}
-      <div className='style-row-compact'>
-        <label>Text</label>
-        <div className='style-row-compact__controls'>
-          <div
-            className='style-input-color'
-            style={{ backgroundColor: textColor }}
-            onClick={() => openColorPicker('text')}
+    const edgeColor = edge.style?.color || '#000000';
+    const edgeWidth = edge.style?.width || 2;
+
+    const handleEdgeStyleChange = (property: string, value: string | number) => {
+      updateEdgeStyles(edge.id, { [property]: value });
+    };
+
+    const handleDeleteEdge = () => {
+      deleteEdge(edge.id);
+      selectEdge(null);
+    }
+
+    return (
+      <div className='style-panel'>
+
+        <div className='style-row-compact'>
+          <label>Color</label>
+          <div className='style-row-compact__controls'>
+            <div
+              className='style-input-color'
+              style={{ backgroundColor: edgeColor }}
+              onClick={() => openColorPicker('edgeColor')}
+            />
+          </div>
+        </div>
+
+        <div className='style-row-compact'>
+          <label>Width</label>
+          <div className='style-row-compact__controls'>
+            <input
+              type='number'
+              className='style-input-small'
+              value={edgeWidth}
+              onChange={(e) => handleEdgeStyleChange('width', Number(e.target.value))}
+              min='1'
+              max='10'
+            />
+          </div>
+        </div>
+
+        {openPicker === 'edgeColor' && (
+          <ColorPicker
+            color={edgeColor}
+            target="Edge Color"
+            onChange={(color) => handleEdgeStyleChange('color', color)}
           />
-          <input
-            type='number'
-            className='style-input-small'
-            value={fontSize}
-            onChange={(e) => handleStyleChange('fontSize', Number(e.target.value))}
-            min='8'
-            max='72'
-          />
+        )}
+        
+        <div className='action-buttons'>
+          <button 
+            className='action-button'
+            onClick={handleDeleteEdge}>
+            <Trash2/>
+          </button>
         </div>
       </div>
+    );
+  }
 
-      {/* Background Row */}
-      <div className='style-row-compact'>
-        <label>Background</label>
-        <div className='style-row-compact__controls'>
-          <div
-            className='style-input-color'
-            style={{ backgroundColor: backgroundColor }}
-            onClick={() => openColorPicker('background')}
-          />
-        </div>
-      </div>
-
-      {/* Border Row */}
-      <div className='style-row-compact'>
-        <label>Border</label>
-        <div className='style-row-compact__controls'>
-          <div
-            className='style-input-color'
-            style={{ backgroundColor: borderColor }}
-            onClick={() => openColorPicker('border')}
-          />
-          <input
-            type='number'
-            className='style-input-small'
-            value={borderWidth}
-            onChange={(e) => handleStyleChange('borderWidth', Number(e.target.value))}
-            min='0'
-            max='10'
-          />
-          {shape === 'rectangle' && (
-            <div className='border-type-buttons'>
-              <button
-                className={`border-type-btn ${borderRadius === 0 ? 'active' : ''}`}
-                onClick={() => handleStyleChange('borderRadius', 0)}
-                title='Square corners'
-              >
-                <Square size={16} strokeWidth={2} />
-              </button>
-              <button
-                className={`border-type-btn ${borderRadius > 0 ? 'active' : ''}`}
-                onClick={() => handleStyleChange('borderRadius', 10)}
-                title='Rounded corners'
-              >
-                <SquareRoundCorner size={16} strokeWidth={2} />
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {openPicker === 'text' && (
-        <ColorPicker
-          color={textColor}
-          target="Text Color"
-          onChange={(color) => handleStyleChange('textColor', color)}
-        />
-      )}
-
-      {openPicker === 'background' && (
-        <ColorPicker
-          color={backgroundColor}
-          target="Background Color"
-          onChange={(color) => handleStyleChange('backgroundColor', color)}
-        />
-      )}
-
-      {openPicker === 'border' && (
-        <ColorPicker
-          color={borderColor}
-          target="Border Color"
-          onChange={(color) => handleStyleChange('borderColor', color)}
-        />
-      )}
-      <div className='action-buttons'>
-        <button 
-          className='action-button'
-          onClick={handleDeleteNode}>
-          <Trash2/>
-        </button>
-        <button 
-          className='action-button'
-          onClick={handleDuplicateNode}>
-          <Copy />
-        </button>
-      </div>
-    </div>
-  );
+  return null;
 }

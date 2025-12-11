@@ -89,7 +89,7 @@ export function useCanvasPan(
 
       cleanupListeners();
 
-      useFlowStore.setState({ selectedNodeId: null });
+      useFlowStore.setState({ selectedNodeId: null, selectedEdgeId: null });
       setIsPanning(true);
       lastMousePos.current = { x: event.clientX, y: event.clientY };
 

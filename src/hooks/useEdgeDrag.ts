@@ -25,6 +25,11 @@ export function useEdgeDrag(
     onTouchEnd: null,
   });
 
+  const selectEdge = useCallback(
+    (id: string | null) => useFlowStore.setState({ selectedEdgeId: id }),
+    []
+  );
+
   const allNodes = useFlowStore((state) => state.nodes);
   const updateEdgeHead = useFlowStore((state) => state.updateEdgeHead);
   const setIsDraggingEdge = useFlowStore((state) => state.setIsDraggingEdge);
@@ -115,6 +120,13 @@ export function useEdgeDrag(
       e.stopPropagation();
       selectNode(null);
 
+      const currentSelectedId = useFlowStore.getState().selectedEdgeId;
+      if (edgeId === currentSelectedId) {
+        selectEdge(null);
+      } else {
+        selectEdge(edgeId);
+      }
+
       let p2: position;
 
       if (typeof storeEdgeTo === "string") {
@@ -143,13 +155,32 @@ export function useEdgeDrag(
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
     },
-    [nodes, onEnd, onMove, selectNode, setIsDraggingEdge, storeEdgeTo, storeEdgeToAnchor, cleanupListeners]
+    [
+      nodes, 
+      onEnd, 
+      onMove, 
+      selectNode, 
+      setIsDraggingEdge, 
+      storeEdgeTo, 
+      storeEdgeToAnchor, 
+      cleanupListeners, 
+      selectEdge, 
+      edgeId
+    ]
   );
 
   const onTouchStart = useCallback(
     (e: React.TouchEvent) => {
       cleanupListeners();
       e.stopPropagation();
+      selectNode(null);
+
+      const currentSelectedId = useFlowStore.getState().selectedEdgeId;
+      if (edgeId === currentSelectedId) {
+        selectEdge(null);
+      } else {
+        selectEdge(edgeId);
+      }
 
       let p2: position;
 
@@ -167,7 +198,6 @@ export function useEdgeDrag(
 
       const onTouchMove = (e: TouchEvent) => {
         e.preventDefault();
-        selectNode(null);
         onMove(e.touches[0].clientX, e.touches[0].clientY);
       };
 
@@ -181,7 +211,18 @@ export function useEdgeDrag(
       document.addEventListener("touchmove", onTouchMove, { passive: false });
       document.addEventListener("touchend", onTouchEnd);
     },
-    [nodes, onEnd, onMove, setIsDraggingEdge, storeEdgeTo, storeEdgeToAnchor, cleanupListeners, selectNode]
+    [
+      nodes, 
+      onEnd, 
+      onMove, 
+      setIsDraggingEdge, 
+      storeEdgeTo, 
+      storeEdgeToAnchor, 
+      cleanupListeners, 
+      selectNode,
+      selectEdge,
+      edgeId
+    ]
   );
 
   return { onMouseDown, onTouchStart };
