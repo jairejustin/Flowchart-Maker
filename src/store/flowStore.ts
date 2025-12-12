@@ -40,6 +40,7 @@ interface FlowState {
   updateNodeStyles: (id: string, style: Partial<NodeStyle>) => void;
   updateEdgeStyles: (id: string, style: Partial<EdgeStyle>) => void;
   setNodes: (nodes: NodeData[]) => void;
+  resetEditingStates: () => void;
   
   // Edge operations
   selectEdge: (id: string | null) => void;
@@ -79,7 +80,7 @@ export const useFlowStore = create<FlowState>()(
         // Only load if we have no nodes
         if (nodes.length === 0) {
           set({
-            nodes: mockDoc.nodes,
+            nodes: mockDoc.nodes.map(node => ({ ...node, editing: false })), // Sanitize editing state
             edges: mockDoc.edges,
             viewport: mockDoc.viewport,
           });
@@ -153,6 +154,13 @@ export const useFlowStore = create<FlowState>()(
 
       setNodes: (newNodes) => {
         set({ nodes: newNodes });
+      },
+
+      // cleanup utility
+      resetEditingStates: () => {
+        set((state) => ({
+          nodes: state.nodes.map((node) => ({ ...node, editing: false })),
+        }));
       },
 
       // Edge operations
@@ -236,7 +244,7 @@ export const useFlowStore = create<FlowState>()(
     {
       name: "flow-storage",
       partialize: (state) => ({
-        nodes: state.nodes,
+        nodes: state.nodes.map((node) => ({ ...node, editing: false })), // Never persist editing state
         edges: state.edges,
         viewport: state.viewport,
       }),
