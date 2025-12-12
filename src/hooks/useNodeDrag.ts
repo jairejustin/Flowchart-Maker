@@ -21,7 +21,7 @@ export function useNodeDrag(
   });
 
   const selectNode = useCallback(
-    (id: string | null) => useFlowStore.setState({ selectedNodeId: id }),
+    (id: string | null) => useFlowStore.setState({ selectedNodeId: id, selectedEdgeId: null }),
     []
   );
   const updateNodePosition = useFlowStore((state) => state.updateNodePosition);

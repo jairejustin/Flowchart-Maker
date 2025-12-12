@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Square, SquareRoundCorner, Trash2, Copy } from 'lucide-react';
+import { Square, SquareRoundCorner, Trash2, Copy, RefreshCw } from 'lucide-react';
 import { useFlowStore } from '../../store/flowStore';
 import './StylePanel.css';
 import ColorPicker from "../color-picker/ColorPicker"
@@ -26,7 +26,7 @@ export default function StylePanel({ id, type }: StylePanelProps) {
   const updateEdgeStyles = useFlowStore((state) => state.updateEdgeStyles);
   const selectNode = useFlowStore((state) => state.selectNode);
   const selectEdge = useFlowStore((state) => state.selectEdge);
-  const { addNode, deleteNode, deleteEdge } = useFlowStore(); 
+  const { addNode, deleteNode, deleteEdge, flipEdge } = useFlowStore(); 
   
   const openColorPicker = (pickerType: string) => {
     setOpenPicker(openPicker === pickerType ? null : pickerType);
@@ -219,6 +219,11 @@ export default function StylePanel({ id, type }: StylePanelProps) {
       selectEdge(null);
     }
 
+    const handleFlipEdge = () => {
+      flipEdge(edge.id);
+    }
+
+
     return (
       <div className='style-panel'>
 
@@ -260,6 +265,11 @@ export default function StylePanel({ id, type }: StylePanelProps) {
             className='action-button'
             onClick={handleDeleteEdge}>
             <Trash2/>
+          </button>
+          <button 
+            className='action-button'
+            onClick={handleFlipEdge}>
+            <RefreshCw/>
           </button>
         </div>
       </div>

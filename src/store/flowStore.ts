@@ -46,6 +46,8 @@ interface FlowState {
   addEdge: (edgeData?: Partial<EdgeData>) => string;
   deleteEdge: (id: string) => void;
   updateEdgeHead: (id: string, to: string | position, toAnchor?: EdgeAnchor) => void;
+  updateEdgeTail: (id: string, from: string | position, fromAnchor?: EdgeAnchor) => void;
+  flipEdge: (id: string) => void;
   setEdges: (edges: EdgeData[]) => void;
   
   // Viewport operations
@@ -171,7 +173,6 @@ export const useFlowStore = create<FlowState>()(
         }));
       },
 
-            // In your store definition
       selectEdge: (id) => {
         set({ selectedEdgeId: id });
       },
@@ -181,6 +182,30 @@ export const useFlowStore = create<FlowState>()(
           edges: state.edges.map((edge) =>
             edge.id === id ? { ...edge, to, toAnchor: toAnchor || edge.toAnchor } : edge
           ),
+        }));
+      },
+
+      updateEdgeTail: (id, from, fromAnchor) => {
+        set((state) => ({
+          edges: state.edges.map((edge) =>
+            edge.id === id ? { ...edge, from, fromAnchor: fromAnchor || edge.fromAnchor } : edge
+          ),
+        }));
+      },
+
+      flipEdge: (id) => {
+        set((state) => ({
+          edges: state.edges.map((edge) => {
+            if (edge.id !== id) return edge;
+            
+            return {
+              ...edge,
+              from: edge.to as string | position,
+              to: edge.from as string | position,
+              fromAnchor: edge.toAnchor,
+              toAnchor: edge.fromAnchor,
+            };
+          }),
         }));
       },
 

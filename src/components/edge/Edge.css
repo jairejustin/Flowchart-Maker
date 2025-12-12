@@ -1,3 +1,9 @@
-circle:hover {
+.hover-indicator:hover {
     fill: rgba(0,0,0,0.1);
+}
+
+.dot {
+    cursor: grab;
+    touch-action: none;
+    pointer-events: auto;
 }

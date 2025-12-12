@@ -1,4 +1,4 @@
-import type { NodeData, EdgeData, position } from "../../lib/types"
+import type { NodeData, EdgeData, position, EdgeAnchor } from "../../lib/types"
 import { useFlowStore } from "../../store/flowStore"
 import "./Edge.css"
 import { useEdgeDrag } from "../../hooks/useEdgeDrag"
@@ -6,32 +6,50 @@ import { getAnchorPoint } from "../../lib/utils"
 import { useCallback } from "react"
 
 export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
-  // States from store
   const storeEdge = useFlowStore((state) => state.edges.find((e) => e.id === edge.id));
-  const fromNode = nodes.find(n => n.id === edge.from);
   const selectedEdgeId = useFlowStore((state) => state.selectedEdgeId);
-  
-  // Extract values with defaults for the hook
-  const storeEdgeTo = storeEdge?.to || { x: 0, y: 0 };
-  const storeEdgeToAnchor = storeEdge?.toAnchor || { side: "top" as const };
-  const fromNodeId = fromNode?.id || "";
-  
-  const { onMouseDown, onTouchStart } = useEdgeDrag(
+  const selectNode = useFlowStore((state) => state.selectNode);
+
+  // initialize variables for hooks with defaults to ensure unconditional hook calls
+  let fromNodeIdForHook: string = "";
+  let toNodeIdForHook: string | undefined = undefined;
+  let storeEdgeToForHook: EdgeData['to'] = { x: 0, y: 0 }; 
+  let storeEdgeFromForHook: EdgeData['from'] = { x: 0, y: 0 };
+  let storeEdgeToAnchorForHook: EdgeAnchor = { side: "top" as const };
+  let storeEdgeFromAnchorForHook: EdgeAnchor = { side: "bottom" as const };
+
+  // define fromNode here to be accessible later in the component and for conditional logic
+  let fromNode: NodeData | undefined;
+
+  // get values for hooks if storeEdge exists
+  if (storeEdge) {
+    if (typeof storeEdge.from === "string") {
+      fromNode = nodes.find(n => n.id === storeEdge.from);
+      fromNodeIdForHook = fromNode?.id || "";
+    }
+    storeEdgeToForHook = storeEdge.to;
+    storeEdgeToAnchorForHook = storeEdge.toAnchor || { side: "top" as const };
+    storeEdgeFromForHook = storeEdge.from;
+    storeEdgeFromAnchorForHook = storeEdge.fromAnchor || { side: "bottom" as const };
+    toNodeIdForHook = typeof storeEdge.to === "string" ? storeEdge.to : undefined;
+  }
+
+  const { onMouseDownHead, onTouchStartHead, onMouseDownTail, onTouchStartTail } = useEdgeDrag(
     edge.id,
-    fromNodeId,
-    storeEdgeTo,
-    storeEdgeToAnchor,
+    fromNodeIdForHook,
+    toNodeIdForHook,
+    storeEdgeToForHook,
+    storeEdgeToAnchorForHook,
+    storeEdgeFromForHook,
+    storeEdgeFromAnchorForHook,
     nodes
   );
-  
-  const selectNode = useFlowStore((state) => state.selectNode);
-  
+
   const handleEdgeClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      selectNode(null); // Deselect any selected node
+      selectNode(null);
       
-      // Toggle edge selection
       if (selectedEdgeId === edge.id) {
         useFlowStore.setState({ selectedEdgeId: null });
       } else {
@@ -41,25 +59,41 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
     [edge.id, selectedEdgeId, selectNode]
   );
   
-  // Safety checks
-  if (!fromNode || !storeEdge) return null;
+  // safety check
+  if (!storeEdge) return null;
+
+  // conditional logic will safely proceed since storeEdge is guaranteed to exist
+  // rechecking fromNode in case it was not found earlier when storeEdge.from was a string
+  if (typeof storeEdge.from === "string") {
+    // If from is a string but node not found, edge is invalid
+    if (!fromNode) return null;
+  }
+  // if from is a position object, fromNode stays undefined
+
+  // calculate p1, handle both node and position
+  let p1: position;
+  if (typeof storeEdge.from === "string" && fromNode) {
+    p1 = getAnchorPoint(fromNode, storeEdge.fromAnchor);
+  } else if (typeof storeEdge.from === "object") {
+    p1 = storeEdge.from; // It's already a position
+  } else {
+    return null; // Invalid state
+  }
   
-  const p1 = getAnchorPoint(fromNode, storeEdge.fromAnchor);
-  
+  // calculate p2, handle both node and position
   let p2: position;
   if (typeof storeEdge.to === "string") {
     const toNode = nodes.find(n => n.id === storeEdge.to);
     if (!toNode) return null;
     p2 = getAnchorPoint(toNode, storeEdge.toAnchor);
   } else {
-    // storeEdge.to is a raw {x, y} position
-    p2 = storeEdge.to;
+    p2 = storeEdge.to; // already a position
   }
   
   const color = storeEdge.style?.color || "black";
   const isSelected = selectedEdgeId === edge.id;
   
-  // Calculate label position if label exists
+  // get label position if label exists
   let labelX = 0;
   let labelY = 0;
   if (storeEdge.label) {
@@ -78,7 +112,7 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
         stroke={color}
         strokeWidth={storeEdge.style?.width || 2}
         strokeDasharray={storeEdge.style?.dashed ? "5,5" : undefined}
-        onClick={handleEdgeClick}
+        onMouseDown={handleEdgeClick}
         markerEnd="url(#arrowhead)"
         style={{ 
           cursor: "pointer", 
@@ -126,17 +160,29 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
         </g>
       )}
       
-      {p2 && (
-        <circle
-          cx={p2.x}
-          cy={p2.y}
-          r={20}
-          fill="transparent"
-          style={{ cursor: "grab", touchAction: "none", pointerEvents: "auto" }}
-          onMouseDown={onMouseDown}
-          onTouchStart={onTouchStart}
-        />
-      )}
+      {/* to endpoint */}
+      <circle
+        className="hover-indicator"
+        cx={p2.x}
+        cy={p2.y}
+        r={20}
+        fill="transparent"
+        style={{ cursor: "grab", touchAction: "none", pointerEvents: "auto" }}
+        onMouseDown={onMouseDownHead}
+        onTouchStart={onTouchStartHead}
+      />
+      
+      {/* from endpoint */}
+      <circle
+        className="hover-indicator"
+        cx={p1.x}
+        cy={p1.y}
+        r={20}
+        fill="transparent"
+        style={{ cursor: "grab", touchAction: "none", pointerEvents: "auto" }}
+        onMouseDown={onMouseDownTail}
+        onTouchStart={onTouchStartTail}
+      />
     </g>
   );
 }
