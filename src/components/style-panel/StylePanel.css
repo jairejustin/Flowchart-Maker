@@ -159,3 +159,10 @@ display: block;
 .action-button:hover {
 background-color: #d0d0d0;
 }
+
+@media (width: 500px) {
+.style-panel {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+}

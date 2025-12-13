@@ -64,3 +64,10 @@
   background-color: #e6f2ff;
   
 }
+
+@media (width: 500px) {
+.toolbar {
+    top: 0.5rem;
+    left: 0.5rem;
+  }
+}

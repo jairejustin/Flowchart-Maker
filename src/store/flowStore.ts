@@ -21,10 +21,11 @@ interface FlowState {
   selectedNodeId: string | null;
   selectedEdgeId: string | null;
   
-  // UI state (not persisted)
+  // UI state
   isDraggingNode: boolean;
   isResizingNode: boolean;
   isDraggingEdge: boolean;
+  isMobile: boolean;
   
   // Simple init
   loadMockData: (mockDoc: FlowDocument) => void;
@@ -72,6 +73,7 @@ export const useFlowStore = create<FlowState>()(
       isDraggingNode: false,
       isResizingNode: false,
       isDraggingEdge: false,
+      isMobile:window.matchMedia("(max-width: 500px)").matches,
 
       // Load mock data (only if store is empty)
       loadMockData: (mockDoc: FlowDocument) => {

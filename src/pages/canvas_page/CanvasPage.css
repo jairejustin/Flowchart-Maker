@@ -9,3 +9,31 @@
 .canvas:active {
   cursor: grabbing;
 }
+
+.mobile-toggle-editor-button {
+  position: fixed;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: all 0.2s ease;
+}
+
+.mobile-toggle-editor-button:active {
+  transform: scale(0.95);
+}
+
+.mobile-toggle-editor-button svg {
+  width: 24px;
+  height: 24px;
+}
