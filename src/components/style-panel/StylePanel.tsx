@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Square, SquareRoundCorner, Trash2, Copy, RefreshCw } from 'lucide-react';
 import { useFlowStore } from '../../store/flowStore';
 import './StylePanel.css';
@@ -28,18 +28,82 @@ export default function StylePanel({ id, type }: StylePanelProps) {
   const [borderWidth, setBorderWidth] = useState<string>(String(borderWidthFromStore));
   const [edgeWidth, setEdgeWidth] = useState<string>(String(edgeWidthFromStore));
 
-  useEffect(() => {
-    setFontSize(String(fontSizeFromStore));
-  }, [fontSizeFromStore]);
+  const [isFontSizeFocused, setIsFontSizeFocused] = useState(false);
+  const [isBorderWidthFocused, setIsBorderWidthFocused] = useState(false);
+  const [isEdgeWidthFocused, setIsEdgeWidthFocused] = useState(false);
+
+  //==================================================================================
+  // Sync local input state from store when not focused
+  // This is safe: the focus checks should prevent infinite loops
 
   useEffect(() => {
-    setBorderWidth(String(borderWidthFromStore));
-  }, [borderWidthFromStore]);
+    if (!isFontSizeFocused) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFontSize(String(fontSizeFromStore));
+    }
+  }, [fontSizeFromStore, isFontSizeFocused]);
 
   useEffect(() => {
-    setEdgeWidth(String(edgeWidthFromStore));
-  }, [edgeWidthFromStore]);
+    if (!isBorderWidthFocused) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setBorderWidth(String(borderWidthFromStore));
+    }
+  }, [borderWidthFromStore, isBorderWidthFocused]);
+
+  useEffect(() => {
+    if (!isEdgeWidthFocused) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setEdgeWidth(String(edgeWidthFromStore));
+    }
+  }, [edgeWidthFromStore, isEdgeWidthFocused]);
+
+  //======================================================================================
+
+  // Store pending values that need to be committed
+  const pendingFontSize = useRef<string | null>(null);
+  const pendingBorderWidth = useRef<string | null>(null);
+  const pendingEdgeWidth = useRef<string | null>(null);
+
+  //======================================================================================
+  // Commit pending changes when component unmounts
+  // Safe: only commits on unmount, uses getState() to avoid subscriptions
+  // Dependencies are intentionally limited to stable values (type, id)
+
+  useEffect(() => {
+    return () => {
+      if (type === "Node") {
+        if (pendingFontSize.current !== null) {
+          const numValue = Number(pendingFontSize.current);
+          if (!isNaN(numValue)) {
+            useFlowStore.getState().updateNodeStyles(id, { 
+              fontSize: Math.max(8, Math.min(72, numValue)) 
+            });
+          }
+        }
+        if (pendingBorderWidth.current !== null) {
+          const numValue = Number(pendingBorderWidth.current);
+          if (!isNaN(numValue)) {
+            useFlowStore.getState().updateNodeStyles(id, { 
+              borderWidth: Math.max(0, Math.min(10, numValue)) 
+            });
+          }
+        }
+      }
+      if (type === "Edge") {
+        if (pendingEdgeWidth.current !== null) {
+          const numValue = Number(pendingEdgeWidth.current);
+          if (!isNaN(numValue)) {
+            useFlowStore.getState().updateEdgeStyles(id, { 
+              width: Math.max(1, Math.min(10, numValue)) 
+            });
+          }
+        }
+      }
+    };
+  }, [type, id]);
   
+  //==========================================================================================
+
   const updateNodeContent = useFlowStore((state) => state.updateNodeContent);
   const updateNodeEditing = useFlowStore((state) => state.updateNodeEditing);
   const updateNodeStyles = useFlowStore((state) => state.updateNodeStyles);
@@ -96,12 +160,33 @@ export default function StylePanel({ id, type }: StylePanelProps) {
       selectNode(newId);
     }
 
+    const commitFontSize = () => {
+      const numValue = Number(fontSize);
+      if (!isNaN(numValue)) {
+        handleStyleChange('fontSize', Math.max(8, Math.min(72, numValue)));
+        pendingFontSize.current = null;
+      } else {
+        setFontSize(String(fontSizeFromStore));
+        pendingFontSize.current = null;
+      }
+    };
+
+    const commitBorderWidth = () => {
+      const numValue = Number(borderWidth);
+      if (!isNaN(numValue)) {
+        handleStyleChange('borderWidth', Math.max(0, Math.min(10, numValue)));
+        pendingBorderWidth.current = null;
+      } else {
+        setBorderWidth(String(borderWidthFromStore));
+        pendingBorderWidth.current = null;
+      }
+    };
+
     return (
       <div className='style-panel'>
         <textarea
           className='style-panel__node-textbox'
           placeholder='Write text'
-
           value={text}
           onBlur={() => {
             updateNodeEditing(node.id, false);
@@ -122,13 +207,19 @@ export default function StylePanel({ id, type }: StylePanelProps) {
               type='number'
               className='style-input-small'
               value={fontSize}
-              onChange={(e) => setFontSize(e.target.value)}
+              onFocus={() => setIsFontSizeFocused(true)}
+              onChange={(e) => {
+                setFontSize(e.target.value);
+                pendingFontSize.current = e.target.value;
+              }}
               onBlur={() => {
-                const numValue = Number(fontSize);
-                if (!isNaN(numValue)) {
-                  handleStyleChange('fontSize', Math.max(8, Math.min(72, numValue)));
-                } else {
-                  setFontSize(String(fontSizeFromStore)); // Revert to stored value if invalid
+                setIsFontSizeFocused(false);
+                commitFontSize();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  commitFontSize();
+                  e.currentTarget.blur(); // Trigger onBlur to deselect the input
                 }
               }}
               min='8'
@@ -162,13 +253,19 @@ export default function StylePanel({ id, type }: StylePanelProps) {
               type='number'
               className='style-input-small'
               value={borderWidth}
-              onChange={(e) => setBorderWidth(e.target.value)}
+              onFocus={() => setIsBorderWidthFocused(true)}
+              onChange={(e) => {
+                setBorderWidth(e.target.value);
+                pendingBorderWidth.current = e.target.value;
+              }}
               onBlur={() => {
-                const numValue = Number(borderWidth);
-                if (!isNaN(numValue)) {
-                  handleStyleChange('borderWidth', Math.max(0, Math.min(10, numValue)));
-                } else {
-                  setBorderWidth(String(borderWidthFromStore)); // Revert to stored value if invalid
+                setIsBorderWidthFocused(false);
+                commitBorderWidth();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  commitBorderWidth();
+                  e.currentTarget.blur(); // Trigger onBlur to deselect the input
                 }
               }}
               min='0'
@@ -256,10 +353,19 @@ export default function StylePanel({ id, type }: StylePanelProps) {
       flipEdge(edge.id);
     }
 
+    const commitEdgeWidth = () => {
+      const numValue = Number(edgeWidth);
+      if (!isNaN(numValue)) {
+        handleEdgeStyleChange('width', Math.max(1, Math.min(10, numValue)));
+        pendingEdgeWidth.current = null;
+      } else {
+        setEdgeWidth(String(edgeWidthFromStore));
+        pendingEdgeWidth.current = null;
+      }
+    };
 
     return (
       <div className='style-panel'>
-
         <div className='style-row-compact'>
           <label>Color</label>
           <div className='style-row-compact__controls'>
@@ -278,13 +384,19 @@ export default function StylePanel({ id, type }: StylePanelProps) {
               type='number'
               className='style-input-small'
               value={edgeWidth}
-              onChange={(e) => setEdgeWidth(e.target.value)}
+              onFocus={() => setIsEdgeWidthFocused(true)}
+              onChange={(e) => {
+                setEdgeWidth(e.target.value);
+                pendingEdgeWidth.current = e.target.value;
+              }}
               onBlur={() => {
-                const numValue = Number(edgeWidth);
-                if (!isNaN(numValue)) {
-                  handleEdgeStyleChange('width', Math.max(1, Math.min(10, numValue)));
-                } else {
-                  setEdgeWidth(String(edgeWidthFromStore)); // Revert to stored value if invalid
+                setIsEdgeWidthFocused(false);
+                commitEdgeWidth();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  commitEdgeWidth();
+                  e.currentTarget.blur(); // Trigger onBlur to deselect the input
                 }
               }}
               min='1'
