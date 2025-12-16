@@ -54,7 +54,7 @@ interface FlowState {
   updateEdgeTail: (id: string, from: string | position, fromAnchor?: EdgeAnchor) => void;
   flipEdge: (id: string) => void;
   setEdges: (edges: EdgeData[]) => void;
-  
+
   // Viewport operations
   setViewport: (viewport: Viewport) => void;
   
@@ -87,7 +87,7 @@ export const useFlowStore = create<FlowState>()(
         // Only load if we have no nodes
         if (nodes.length === 0) {
           set({
-            nodes: mockDoc.nodes.map(node => ({ ...node, editing: false })), // Sanitize editing state
+            nodes: mockDoc.nodes.map(node => ({ ...node, editing: false })),
             edges: mockDoc.edges,
             viewport: mockDoc.viewport,
           });
@@ -163,7 +163,6 @@ export const useFlowStore = create<FlowState>()(
         set({ nodes: newNodes });
       },
 
-      // cleanup utility
       resetEditingStates: () => {
         set((state) => ({
           nodes: state.nodes.map((node) => ({ ...node, editing: false })),
@@ -185,6 +184,7 @@ export const useFlowStore = create<FlowState>()(
       deleteEdge: (id) => {
         set((state) => ({
           edges: state.edges.filter((edge) => edge.id !== id),
+          selectedEdgeId: state.selectedEdgeId === id ? null : state.selectedEdgeId,
         }));
       },
 
@@ -260,7 +260,7 @@ export const useFlowStore = create<FlowState>()(
     {
       name: "flow-storage",
       partialize: (state) => ({
-        nodes: state.nodes.map((node) => ({ ...node, editing: false })), // Never persist editing state
+        nodes: state.nodes.map((node) => ({ ...node, editing: false })),
         edges: state.edges,
         viewport: state.viewport,
       }),

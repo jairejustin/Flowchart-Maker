@@ -16,6 +16,7 @@ export default function EdgeStylePanel({ id }: EdgeStylePanelProps) {
   const edgeWidthFromStore = edge?.style?.width || 2;
   const edgeLabelTextFromStore = edge?.label?.text || "";
   const edgeLabelTFromStore = edge?.label?.t || 0.5;
+  const edgeLabelFontSizeFromStore = edge?.label?.fontSize || 14;
 
   const [edgeWidth, setEdgeWidth] = useState<string>(
     String(edgeWidthFromStore)
@@ -24,18 +25,22 @@ export default function EdgeStylePanel({ id }: EdgeStylePanelProps) {
   const [labelPosition, setLabelPosition] = useState<string>(
     String(edgeLabelTFromStore)
   );
+  const [labelFontSize, setLabelFontSize] = useState<string>(
+    String(edgeLabelFontSizeFromStore)
+  );
 
   const [isEdgeWidthFocused, setIsEdgeWidthFocused] = useState(false);
   const [isLabelTextFocused, setIsLabelTextFocused] = useState(false);
   const [isLabelPositionFocused, setIsLabelPositionFocused] = useState(false);
+  const [isLabelFontSizeFocused, setIsLabelFontSizeFocused] = useState(false);
 
   // Store pending values that need to be committed
   const pendingEdgeWidth = useRef<string | null>(null);
+  const pendingLabelFontSize = useRef<string | null>(null);
 
   // Sync local input state from store when not focused
   // Why ESLint warnings are disabled:
   // This is safe, the focus checks should prevent infinite loops
-
   useEffect(() => {
     if (!isEdgeWidthFocused) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -57,6 +62,13 @@ export default function EdgeStylePanel({ id }: EdgeStylePanelProps) {
     }
   }, [edgeLabelTFromStore, isLabelPositionFocused]);
 
+  useEffect(() => {
+    if (!isLabelFontSizeFocused) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLabelFontSize(String(edgeLabelFontSizeFromStore));
+    }
+  }, [edgeLabelFontSizeFromStore, isLabelFontSizeFocused]);
+
   // Commit pending changes when component unmounts
   useEffect(() => {
     return () => {
@@ -65,6 +77,16 @@ export default function EdgeStylePanel({ id }: EdgeStylePanelProps) {
         if (!isNaN(numValue)) {
           useFlowStore.getState().updateEdgeStyles(id, {
             width: Math.max(1, Math.min(10, numValue)),
+          });
+        }
+      }
+      if (pendingLabelFontSize.current !== null) {
+        const numValue = Number(pendingLabelFontSize.current);
+        const currentLabel = useFlowStore.getState().edges.find(e => e.id === id)?.label;
+        if (!isNaN(numValue) && currentLabel) {
+          useFlowStore.getState().updateEdgeLabel(id, {
+            ...currentLabel,
+            fontSize: Math.max(8, Math.min(72, numValue)),
           });
         }
       }
@@ -81,7 +103,6 @@ export default function EdgeStylePanel({ id }: EdgeStylePanelProps) {
   }
 
   const edgeColor = edge.style?.color || "#000000";
-  const labelFontSize = edge.label?.fontSize || 14;
   const isLabelActive = !!edge.label;
 
   const openColorPicker = (pickerType: string) => {
@@ -97,7 +118,7 @@ export default function EdgeStylePanel({ id }: EdgeStylePanelProps) {
       updateEdgeLabel(edge.id, undefined);
       setLabelText("");
     } else {
-      updateEdgeLabel(edge.id, { text: "", t: 0.5 });
+      updateEdgeLabel(edge.id, { text: "", t: 0.5, fontSize: 14 });
     }
   };
 
@@ -109,7 +130,7 @@ export default function EdgeStylePanel({ id }: EdgeStylePanelProps) {
     if (currentLabel) {
       updateEdgeLabel(edge.id, { ...currentLabel, text: newText });
     } else if (newText) {
-      updateEdgeLabel(edge.id, { text: newText, t: 0.5 });
+      updateEdgeLabel(edge.id, { text: newText, t: 0.5, fontSize: 14 });
     }
   };
 
@@ -130,6 +151,22 @@ export default function EdgeStylePanel({ id }: EdgeStylePanelProps) {
       updateEdgeLabel(edge.id, {
         text: "",
         t: Math.max(0, Math.min(1, numValue)),
+        fontSize: 14,
+      });
+    }
+  };
+
+  const handleLabelFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setLabelFontSize(newValue);
+    pendingLabelFontSize.current = newValue;
+
+    const numValue = Number(newValue);
+    const currentLabel = edge.label;
+    if (!isNaN(numValue) && currentLabel) {
+      updateEdgeLabel(edge.id, {
+        ...currentLabel,
+        fontSize: Math.max(8, Math.min(72, numValue)),
       });
     }
   };
@@ -151,6 +188,21 @@ export default function EdgeStylePanel({ id }: EdgeStylePanelProps) {
     } else {
       setEdgeWidth(String(edgeWidthFromStore));
       pendingEdgeWidth.current = null;
+    }
+  };
+
+  const commitLabelFontSize = () => {
+    const numValue = Number(labelFontSize);
+    const currentLabel = edge.label;
+    if (!isNaN(numValue) && currentLabel) {
+      updateEdgeLabel(edge.id, {
+        ...currentLabel,
+        fontSize: Math.max(8, Math.min(72, numValue)),
+      });
+      pendingLabelFontSize.current = null;
+    } else {
+      setLabelFontSize(String(edgeLabelFontSizeFromStore));
+      pendingLabelFontSize.current = null;
     }
   };
 
@@ -223,21 +275,24 @@ export default function EdgeStylePanel({ id }: EdgeStylePanelProps) {
             onBlur={() => setIsLabelTextFocused(false)}
           />
 
-          {/* Label Text Styling */}
+          {/* Label Font Size */}
           <div className="style-row-compact">
-            <label>Label Text</label>
+            <label>Font Size</label>
             <div className="style-row-compact__controls">
               <input
                 type="number"
                 className="style-input-small"
                 value={labelFontSize}
-                onChange={(e) => {
-                  const numValue = Number(e.target.value);
-                  if (!isNaN(numValue)) {
-                    handleEdgeStyleChange(
-                      "fontSize",
-                      Math.max(8, Math.min(72, numValue))
-                    );
+                onFocus={() => setIsLabelFontSizeFocused(true)}
+                onChange={handleLabelFontSizeChange}
+                onBlur={() => {
+                  setIsLabelFontSizeFocused(false);
+                  commitLabelFontSize();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    commitLabelFontSize();
+                    e.currentTarget.blur();
                   }
                 }}
                 min="8"
@@ -252,7 +307,7 @@ export default function EdgeStylePanel({ id }: EdgeStylePanelProps) {
             <div className="style-row-compact__controls">
               <input
                 type="range"
-                min="0"
+                min="0.01"
                 max="1"
                 step="0.01"
                 value={labelPosition}
