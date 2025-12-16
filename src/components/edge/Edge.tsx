@@ -96,10 +96,23 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
   // get label position if label exists
   let labelX = 0;
   let labelY = 0;
+  let labelFontSize = 14;
+  let labelWidth = 40;
+  let labelHeight = 20;
   if (storeEdge.label) {
     const t = storeEdge.label.t || 0.5;
     labelX = p1.x + (p2.x - p1.x) * t;
     labelY = p1.y + (p2.y - p1.y) * t;
+    labelFontSize = storeEdge.label.fontSize || 14;
+    
+    // Calculate dimensions based on text length and font size
+    const textLength = storeEdge.label.text.length;
+    const charWidth = labelFontSize * 0.6; // Approximate character width
+    const padding = labelFontSize * 0.8; // Horizontal padding based on font size
+    const verticalPadding = labelFontSize * 0.4;
+    
+    labelWidth = Math.max(textLength * charWidth + padding * 2, labelFontSize * 2);
+    labelHeight = labelFontSize + verticalPadding * 2;
   }
   
   return (
@@ -132,6 +145,16 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
           opacity: isSelected ? 1 : 0.8
         }}
       />
+      <line
+        x1={p1.x} 
+        y1={p1.y} 
+        x2={p2.x} 
+        y2={p2.y}
+        stroke="transparent"
+        strokeWidth={Math.max(20, (storeEdge.style?.width || 2) + 16)}
+        style={{ cursor: "pointer", pointerEvents: "auto" }}
+        onPointerDown={handleEdgeClick}
+      />
       
       {isSelected && (
         <line
@@ -149,10 +172,10 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
       {storeEdge.label && (
         <g>
           <rect
-            x={labelX - 20}
-            y={labelY - 10}
-            width={40}
-            height={20}
+            x={labelX - labelWidth / 2}
+            y={labelY - labelHeight / 2}
+            width={labelWidth}
+            height={labelHeight}
             fill="white"
             stroke={color}
             strokeWidth={1}
@@ -164,8 +187,7 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
             textAnchor="middle"
             dominantBaseline="middle"
             fill={color}
-            fontSize={14}
-            //fontSize={storeEdge.label?.fontSize || 14}
+            fontSize={labelFontSize}
             fontWeight="500"
           >
             {storeEdge.label.text}
