@@ -3,12 +3,10 @@ import { useFlowStore } from "../../store/flowStore"
 import "./Edge.css"
 import { useEdgeDrag } from "../../hooks/useEdgeDrag"
 import { getAnchorPoint } from "../../lib/utils"
-import { useCallback } from "react"
 
 export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
   const storeEdge = useFlowStore((state) => state.edges.find((e) => e.id === edge.id));
   const selectedEdgeId = useFlowStore((state) => state.selectedEdgeId);
-  const selectNode = useFlowStore((state) => state.selectNode);
 
   // initialize variables for hooks with defaults to ensure unconditional hook calls
   let fromNodeIdForHook: string = "";
@@ -34,7 +32,7 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
     toNodeIdForHook = typeof storeEdge.to === "string" ? storeEdge.to : undefined;
   }
 
-  const { onPointerDownHead, onPointerDownTail } = useEdgeDrag(
+  const { onPointerDownHead, onPointerDownTail, onEdgeClick } = useEdgeDrag(
     edge.id,
     fromNodeIdForHook,
     toNodeIdForHook,
@@ -45,20 +43,6 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
     nodes
   );
 
-  const handleEdgeClick = useCallback(
-    (e: React.PointerEvent) => {
-      e.stopPropagation();
-      selectNode(null);
-      
-      if (selectedEdgeId === edge.id) {
-        useFlowStore.setState({ selectedEdgeId: null });
-      } else {
-        useFlowStore.setState({ selectedEdgeId: edge.id });
-      }
-    },
-    [edge.id, selectedEdgeId, selectNode]
-  );
-  
   // safety check
   if (!storeEdge) return null;
 
@@ -137,7 +121,7 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
         stroke={color}
         strokeWidth={storeEdge.style?.width || 2}
         strokeDasharray={storeEdge.style?.dashed ? "5,5" : undefined}
-        onPointerDown={handleEdgeClick}
+        onPointerDown={onEdgeClick}
         markerEnd={`url(#arrowhead-${edge.id})`}
         style={{ 
           cursor: "pointer", 
@@ -153,7 +137,7 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
         stroke="transparent"
         strokeWidth={Math.max(20, (storeEdge.style?.width || 2) + 16)}
         style={{ cursor: "pointer", pointerEvents: "auto" }}
-        onPointerDown={handleEdgeClick}
+        onPointerDown={onEdgeClick}
       />
       
       {isSelected && (

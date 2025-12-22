@@ -1,22 +1,20 @@
 import { useRef, useCallback, useEffect } from "react";
 import { useFlowStore } from "../store/flowStore";
+import type { position } from "../lib/types";
 
 export type ResizeHandle = "nw" | "ne" | "sw" | "se" | "n" | "s" | "e" | "w";
 
-type Point = { x: number; y: number };
-
 type Size = { width: number; height: number };
-
 
 export function useNodeResize(
   nodeId: string,
-  position: Point,
+  position: position,
   width: number,
   height: number,
   scale: number
 ) {
-  const startPointerRef = useRef<Point>({ x: 0, y: 0 });
-  const startPosRef = useRef<Point>({ x: 0, y: 0 });
+  const startPointerRef = useRef<position>({ x: 0, y: 0 });
+  const startPosRef = useRef<position>({ x: 0, y: 0 });
   const startSizeRef = useRef<Size>({ width: 0, height: 0 });
   const activeHandleRef = useRef<ResizeHandle | null>(null);
   const activePointerIdRef = useRef<number | null>(null);
@@ -106,7 +104,6 @@ export function useNodeResize(
 
   const onPointerMove = useCallback((e: PointerEvent) => {
     if (e.pointerId !== activePointerIdRef.current) return;
-
     if (rafRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;

@@ -25,6 +25,7 @@ export function useNodeDrag(
   );
   const updateNodePosition = useFlowStore((state) => state.updateNodePosition);
   const setIsDraggingNode = useFlowStore((state) => state.setIsDraggingNode);
+  const viewMode = useFlowStore((state) => state.viewMode);
 
   const cleanupListeners = useCallback(() => {
     if (handlersRef.current.onPointerMove) {
@@ -126,6 +127,8 @@ export function useNodeDrag(
     },
     [editing, position.x, position.y, setIsDraggingNode, onMove, onEnd, cleanupListeners]
   );
-
+  if (viewMode) {
+    return { onPointerDown: () => {} };
+  }
   return { onPointerDown };
 }

@@ -36,7 +36,9 @@ export function useEdgeDrag(
   const updateEdgeHead = useFlowStore((state) => state.updateEdgeHead);
   const updateEdgeTail = useFlowStore((state) => state.updateEdgeTail);
   const setIsDraggingEdge = useFlowStore((state) => state.setIsDraggingEdge);
+  const selectedEdgeId = useFlowStore((state) => state.selectedEdgeId)
   const selectNode = useFlowStore((state) => state.selectNode);
+  const viewMode = useFlowStore((state) => state.viewMode);
 
   const cleanupListeners = useCallback(() => {
     if (handlersRef.current.onPointerMove) {
@@ -59,6 +61,20 @@ export function useEdgeDrag(
       cleanupListeners();
     };
   }, [cleanupListeners]);
+
+    const onEdgeClick = useCallback(
+    (e: React.PointerEvent) => {
+      e.stopPropagation();
+      selectNode(null);
+      
+      if (selectedEdgeId === edgeId) {
+        useFlowStore.setState({ selectedEdgeId: null });
+      } else {
+        useFlowStore.setState({ selectedEdgeId: edgeId });
+      }
+    },
+    [edgeId, selectedEdgeId, selectNode]
+  );
 
   const onMove = useCallback(
     (clientX: number, clientY: number) => {
@@ -296,8 +312,17 @@ export function useEdgeDrag(
     ]
   );
 
+  if (viewMode) {
+    return { 
+      onPointerDownHead: () => {},
+      onPointerDownTail: () => {},
+      onEdgeClick: () => {},
+    };
+  }
+
   return { 
     onPointerDownHead, 
-    onPointerDownTail
+    onPointerDownTail,
+    onEdgeClick,
   };
 }
