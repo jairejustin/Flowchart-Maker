@@ -87,7 +87,7 @@ export const Node = ({ node }: NodeProps) => {
 
 function renderShape(node: NodeData, width: number, height: number) {
   const stroke = node.style?.borderWidth || 2;
-
+  
   switch (node.shape) {
     case "rectangle":
       return (
@@ -100,6 +100,7 @@ function renderShape(node: NodeData, width: number, height: number) {
           rx={node.style?.borderRadius || 0}
         />
       );
+      
     case "diamond":
       return (
         <polygon
@@ -109,7 +110,63 @@ function renderShape(node: NodeData, width: number, height: number) {
           strokeWidth={stroke}
         />
       );
-    // TO DO: more cases for other shapes
+      
+    case "ellipse":
+      return (
+        <ellipse
+          cx={width / 2}
+          cy={height / 2}
+          rx={width / 2}
+          ry={height / 2}
+          fill={node.style?.backgroundColor || "#fff"}
+          stroke={node.style?.borderColor || "#333"}
+          strokeWidth={stroke}
+        />
+      );
+      
+    case "parallelogram": {
+      const offset = width * 0.2;
+      return (
+        <polygon
+          points={`${offset},0 ${width},0 ${width - offset},${height} 0,${height}`}
+          fill={node.style?.backgroundColor || "#fff"}
+          stroke={node.style?.borderColor || "#333"}
+          strokeWidth={stroke}
+        />
+      );
+    }
+      
+    case "trapezoid": {
+      const topOffset = width * 0.2;
+      return (
+        <polygon
+          points={`${topOffset},0 ${width - topOffset},0 ${width},${height} 0,${height}`}
+          fill={node.style?.backgroundColor || "#fff"}
+          stroke={node.style?.borderColor || "#333"}
+          strokeWidth={stroke}
+        />
+      );
+    }
+      
+    case "document": {
+      const curveHeight = height * 0.1;
+      return (
+        <path
+          d={`
+            M 0,0
+            L ${width},0
+            L ${width},${height - curveHeight}
+            Q ${width * 0.75},${height} ${width / 2},${height - curveHeight}
+            Q ${width * 0.25},${height - curveHeight * 2} 0,${height - curveHeight}
+            Z
+          `}
+          fill={node.style?.backgroundColor || "#fff"}
+          stroke={node.style?.borderColor || "#333"}
+          strokeWidth={stroke}
+        />
+      );
+    }
+      
     default:
       return (
         <rect

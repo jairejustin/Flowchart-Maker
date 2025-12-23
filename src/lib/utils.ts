@@ -28,19 +28,89 @@ export function getAnchorPoint(node: NodeData, anchor: EdgeAnchor) {
   const { x, y } = node.position;
   const width = node.width;
   const height = node.height;
+  const shape = node.shape || "rectangle";
 
-  switch (anchor.side) {
-    case "top":
-      return { x: x + width / 2 + 2, y };
-    case "bottom":
-      return { x: x + width / 2 + 2, y: y + height };
-    case "left":
-      return { x, y: y + height / 2 + 2 };
-    case "right":
-      return { x: x + width, y: y + height / 2 + 2 };
+  switch (shape) {
+    case "rectangle":
+    case "ellipse":
+    case "diamond":
+      switch (anchor.side) {
+        case "top":
+          return { x: x + width / 2, y };
+        case "bottom":
+          return { x: x + width / 2, y: y + height };
+        case "left":
+          return { x, y: y + height / 2 };
+        case "right":
+          return { x: x + width, y: y + height / 2 };
+        default:
+          return { x: x + width / 2, y };
+      }
+
+    case "parallelogram": {
+      const offset = width * 0.2;
+      switch (anchor.side) {
+        case "top":
+          return { x: x + (width + offset) / 2, y };
+        case "bottom":
+          return { x: x + (width - offset) / 2, y: y + height };
+        case "left":
+          return { x: x + offset / 2, y: y + height / 2 };
+        case "right":
+          return { x: x + width - offset / 2, y: y + height / 2 };
+        default:
+          return { x: x + width / 2, y };
+      }
+    }
+
+    case "trapezoid": {
+      const topOffset = width * 0.2;
+      switch (anchor.side) {
+        case "top":
+          return { x: x + width / 2, y };
+        case "bottom":
+          return { x: x + width / 2, y: y + height };
+        case "left":
+          return { x: x + topOffset / 2, y: y + height / 2 };
+        case "right":
+          return { x: x + width - topOffset / 2, y: y + height / 2 };
+        default:
+          return { x: x + width / 2, y };
+      }
+    }
+
+    case "document": {
+      // document has a curved bottom that extends down
+      const curveDepth = -height * 0.05;
+      switch (anchor.side) {
+        case "top":
+          return { x: x + width / 2, y };
+        case "bottom":
+          return { x: x + width / 2, y: y + height + curveDepth };
+        case "left":
+          return { x, y: y + height / 2 };
+        case "right":
+          return { x: x + width, y: y + height / 2 };
+        default:
+          return { x: x + width / 2, y };
+      }
+    }
+
+    default:
+      switch (anchor.side) {
+        case "top":
+          return { x: x + width / 2, y };
+        case "bottom":
+          return { x: x + width / 2, y: y + height };
+        case "left":
+          return { x, y: y + height / 2 };
+        case "right":
+          return { x: x + width, y: y + height / 2 };
+        default:
+          return { x: x + width / 2, y };
+      }
   }
 }
-
 // COLOR PICKER
 
 export function hexToRgb(hex: string): { r: number; g: number; b: number }{

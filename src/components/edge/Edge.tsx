@@ -184,7 +184,7 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
         className="hover-indicator"
         cx={p2.x}
         cy={p2.y}
-        r={20}
+        r={25}
         fill="transparent"
         style={{ cursor: "grab", touchAction: "none", pointerEvents: "auto" }}
         onPointerDown={onPointerDownHead}
@@ -195,7 +195,7 @@ export function Edge({ edge, nodes }: { edge: EdgeData; nodes: NodeData[] }) {
         className="hover-indicator"
         cx={p1.x}
         cy={p1.y}
-        r={20}
+        r={25}
         fill="transparent"
         style={{ cursor: "grab", touchAction: "none", pointerEvents: "auto" }}
         onPointerDown={onPointerDownTail}

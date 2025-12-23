@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ShapesIcon, Diamond, Square, Eye, EyeOff } from "lucide-react";
+import { ParallelogramIcon, EllipseIcon, TrapezoidIcon, DocumentIcon } from "../../assets/CustomSVGIcons";
 
 import "./Toolbar.css";
 import { useFlowStore } from "../../store/flowStore";
@@ -17,6 +18,26 @@ export default function Toolbar() {
 
   const handleAddDiamond = () => {
     addNode({ shape: "diamond" });
+    setOpenCreateNode(false);
+  };
+
+  const handleAddEllipse = () => {
+    addNode({ shape: "ellipse" });
+    setOpenCreateNode(false);
+  };
+
+  const handleAddParallelogram = () => {
+    addNode({ shape: "parallelogram" });
+    setOpenCreateNode(false);
+  };
+
+  const handleAddTrapezoid = () => {
+    addNode({ shape: "trapezoid" });
+    setOpenCreateNode(false);
+  };
+
+  const handleAddDocument = () => {
+    addNode({ shape: "document" });
     setOpenCreateNode(false);
   };
 
@@ -64,6 +85,18 @@ export default function Toolbar() {
             </button>
             <button className="toolbar__button" onClick={handleAddDiamond}>
               <Diamond/>
+            </button>
+            <button className="toolbar__button" onClick={handleAddEllipse}>
+              <EllipseIcon/>
+            </button>
+            <button className="toolbar__button" onClick={handleAddParallelogram}>
+              <ParallelogramIcon/>
+            </button>
+            <button className="toolbar__button" onClick={handleAddTrapezoid}>
+              <TrapezoidIcon/>
+            </button>
+            <button className="toolbar__button" onClick={handleAddDocument}>
+              <DocumentIcon/>
             </button>
           </div>
           }
